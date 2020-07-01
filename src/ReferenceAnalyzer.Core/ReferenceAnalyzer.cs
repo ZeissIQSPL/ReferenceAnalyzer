@@ -30,6 +30,8 @@ namespace ReferenceAnalyzer.Core
 			using var workspace = MSBuildWorkspace.Create(properties);
 
 			var loadedSolution = await workspace.OpenSolutionAsync(solution);
+			//TODO handle failures (messages in diagnostics property)
+
 			_projects = loadedSolution.Projects.ToList();
 		}
 
@@ -44,6 +46,7 @@ namespace ReferenceAnalyzer.Core
 		private async Task<ReferencesReport> Analyze(Project project)
 		{
 			var compilation = await project.GetCompilationAsync();
+
 			var visitor = new RoslynVisitor(compilation);
 
 			visitor.VisitNamespace(compilation.Assembly.GlobalNamespace);

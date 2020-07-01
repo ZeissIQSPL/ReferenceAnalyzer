@@ -16,3 +16,14 @@ Scenario Outline: Counting references
 	| two_references_one_unused  | Project2 | 1          |
 	| two_references_one_unused  | Project3 | 0          |
 	| multiple_references_to_one | Project2 | 4          |
+
+Scenario: Defined references
+	Given I have a solution two_references_one_unused
+	When I run analysis for Project1
+	Then Referenced projects should be within defined references list
+
+Scenario: NuGet reference
+	Given I have a solution nuget_references
+	When I run analysis for Project1
+	Then Only xunit.assert should be in actual references
+	And nunit.framework should not be in actual references
