@@ -7,12 +7,12 @@ namespace ReferenceAnalyzer.Core.Tests
     [Binding]
     public class ReferenceAnalysisSteps
     {
-	    private readonly ReferenceCounter _sut;
+	    private readonly ReferenceAnalyzer _sut;
 	    private ReferencesReport _result;
 
 	    public ReferenceAnalysisSteps()
 	    {
-		    _sut = new ReferenceCounter();
+		    _sut = new ReferenceAnalyzer();
 	    }
 
         [Given(@"I have a solution (.*)")]
