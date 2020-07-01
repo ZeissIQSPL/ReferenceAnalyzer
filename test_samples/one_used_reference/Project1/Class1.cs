@@ -6,7 +6,7 @@ namespace Project1
     public class Class1
     {
         public void ReferencingMethod() {
-            UsedClass();
+            Class2.UsedClass();
         }
     }
 }

@@ -8,16 +8,14 @@ namespace ReferenceAnalyzer.Core
 {
     public class RoslynVisitor : SymbolVisitor
     {
-        private Compilation _Compilation;
-        public ConcurrentBag<ITypeSymbol> UsedTypeSymbols { get; set; }
-        public ConcurrentBag<ReferenceOccurence> Occurences { get; set; }
-        //public HashSet<INamedTypeSymbol> UsedTypeSymbols { get; set; }
-        private IDictionary<ITypeSymbol, SyntaxTree> _SyntaxTrees;
+        private readonly Compilation _compilation;
+        public ConcurrentBag<ReferenceOccurrence> Occurrences { get; set; }
+        private readonly IDictionary<ITypeSymbol, SyntaxTree> _syntaxTrees;
         public RoslynVisitor(Compilation compilation)
         {
-            _Compilation = compilation;
-            UsedTypeSymbols = new ConcurrentBag<ITypeSymbol>();
-            _SyntaxTrees = new ConcurrentDictionary<ITypeSymbol, SyntaxTree>();
+            _compilation = compilation;
+            Occurrences = new ConcurrentBag<ReferenceOccurrence>();
+            _syntaxTrees = new ConcurrentDictionary<ITypeSymbol, SyntaxTree>();
 
         }
 
@@ -41,7 +39,7 @@ namespace ReferenceAnalyzer.Core
 
             foreach (var type in symbol.Interfaces)
             {
-                UsedTypeSymbols.Add(type);
+                Occurrences.Add(new ReferenceOccurrence(type, new ReferenceLocation()));
             }
 
             foreach (var ctor in symbol.Constructors)
@@ -59,13 +57,13 @@ namespace ReferenceAnalyzer.Core
                 parameter.Accept(this);
             }
 
-            UsedTypeSymbols.Add(symbol.ReturnType);
+            Occurrences.Add(new ReferenceOccurrence(symbol.ReturnType, new ReferenceLocation()));
             if (!symbol.DeclaringSyntaxReferences.IsEmpty)
             {
-                if (!_SyntaxTrees.TryGetValue(symbol.ContainingType, out var syntaxTree))
+                if (!_syntaxTrees.TryGetValue(symbol.ContainingType, out var syntaxTree))
                 {
                     syntaxTree = symbol.DeclaringSyntaxReferences.First().SyntaxTree;
-                    _SyntaxTrees.Add(symbol.ContainingType, syntaxTree);
+                    _syntaxTrees.Add(symbol.ContainingType, syntaxTree);
                 }
 
                 var nodes = syntaxTree.GetRoot()
@@ -97,24 +95,19 @@ namespace ReferenceAnalyzer.Core
         {
             foreach (var invocation in nodes)
             {
-                var model = _Compilation.GetSemanticModel(syntaxTree);
-                var invokedSymbol = model.GetSymbolInfo(invocation).Symbol;
-
-                if (invokedSymbol == null)
-                {
-                    invokedSymbol = model.GetSymbolInfo(invocation).CandidateSymbols.FirstOrDefault();
-                }
+                var model = _compilation.GetSemanticModel(syntaxTree);
+                var invokedSymbol = model.GetSymbolInfo(invocation).Symbol ?? model.GetSymbolInfo(invocation).CandidateSymbols.FirstOrDefault();
 
 
                 if (invokedSymbol != null)
                 {
                     if (invokedSymbol is ITypeSymbol type)
                     {
-                        UsedTypeSymbols.Add(type);
+                        Occurrences.Add(new ReferenceOccurrence(type, new ReferenceLocation()));
                     }
                     if (invokedSymbol.ContainingType != null)
                     {
-                        UsedTypeSymbols.Add(invokedSymbol.ContainingType);
+                        Occurrences.Add(new ReferenceOccurrence(invokedSymbol.ContainingType, new ReferenceLocation()));
                     }
                 }
             }
@@ -122,7 +115,7 @@ namespace ReferenceAnalyzer.Core
 
         public override void VisitParameter(IParameterSymbol symbol)
         {
-            UsedTypeSymbols.Add(symbol.Type);
+            Occurrences.Add(new ReferenceOccurrence(symbol.Type, new ReferenceLocation()));
             base.VisitParameter(symbol);
         }
     }

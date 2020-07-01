@@ -20,12 +20,7 @@ namespace ReferenceAnalyzer.Core
 		public int ReferencesTo(string target)
 		{
 			var reference = ActualReferences.FirstOrDefault(r => r.Target == target);
-			if (reference == null)
-			{
-				throw new InvalidEnumArgumentException(nameof(target));
-			}
-
-			return reference.Occurences.Count();
-		}
+			return reference == null ? 0 : reference.Occurrences.Count();
+        }
 	}
 }

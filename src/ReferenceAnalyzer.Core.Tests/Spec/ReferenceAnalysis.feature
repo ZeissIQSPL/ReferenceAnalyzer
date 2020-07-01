@@ -6,7 +6,7 @@
 @analysis
 Scenario Outline: Counting references
 	Given I have a solution <solution>
-	When I run analysis for <target>
+	When I run analysis for Project1
 	Then number of references to <target> should be <references>
 
 	Examples:

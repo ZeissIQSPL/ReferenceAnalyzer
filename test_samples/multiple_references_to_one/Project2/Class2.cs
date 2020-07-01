@@ -9,6 +9,6 @@ namespace Project2
         }
 
         public int ReferencedProperty { get; }
-        public int ReferencedProperty2 { set; }
+        public int ReferencedProperty2 { get; set; }
     }
 }

@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace ReferenceAnalyzer.Core.Tests
+namespace ReferenceAnalyzer.Core.Tests.Spec
 {
     using TechTalk.SpecFlow;
     using System;
@@ -128,7 +128,7 @@ this.ScenarioInitialize(scenarioInfo);
  testRunner.Given(string.Format("I have a solution {0}", solution), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 9
- testRunner.When(string.Format("I run analysis for {0}", target), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When("I run analysis for Project1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 10
  testRunner.Then(string.Format("number of references to {0} should be {1}", target, references), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

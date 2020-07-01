@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 
@@ -8,11 +9,19 @@ namespace ReferenceAnalyzer.Core
 {
 	public class ReferenceAnalyzer
 	{
-		private List<Project> _Projects;
+		private List<Project> _projects;
+
+        public ReferenceAnalyzer()
+        {
+            if (MSBuildLocator.IsRegistered) return;
+            var visualStudioInstances = MSBuildLocator.QueryVisualStudioInstances().ToArray();
+            var instance = visualStudioInstances.First();
+            MSBuildLocator.RegisterInstance(instance);
+        }
 
 		public async Task Load(string solution)
 		{
-			var properties = new Dictionary<string, string>() {
+            var properties = new Dictionary<string, string>() {
 				{"AlwaysCompileMarkupFilesInSeparateDomain", "false" },
 				{"Configuration", "Debug"},
 				{"Platform", "x64"}
@@ -21,12 +30,12 @@ namespace ReferenceAnalyzer.Core
 			using var workspace = MSBuildWorkspace.Create(properties);
 
 			var loadedSolution = await workspace.OpenSolutionAsync(solution);
-			_Projects = loadedSolution.Projects.ToList();
+			_projects = loadedSolution.Projects.ToList();
 		}
 
 		public async Task<ReferencesReport> Analyze(string target)
 		{
-			var project = _Projects.First(p => p.Name == target);
+			var project = _projects.First(p => p.Name == target);
 
 			return await Analyze(project);
 
@@ -39,7 +48,18 @@ namespace ReferenceAnalyzer.Core
 
 			visitor.VisitNamespace(compilation.Assembly.GlobalNamespace);
 
-			proj.ActualReferences = visitor.UsedTypeSymbols
+            var actualReferences = visitor.Occurrences
+                .GroupBy(o => o.UsedType.ContainingAssembly)
+                .Select(g => new ActualReference(g.Key.Name, g))
+                .OrderBy(r => r.Target);
+
+			var definedReferences = compilation.ReferencedAssemblyNames
+                .Select(reference => reference.Name)
+                .OrderBy(n => n);
+
+			return new ReferencesReport(definedReferences, actualReferences);
+
+			/*proj.ActualReferences = visitor.UsedTypeSymbols
 				.Where(t => t.ContainingAssembly != null)
 				.Select(r => r.ContainingAssembly.Name)
 				.Select(name => new Reference()
@@ -57,15 +77,7 @@ namespace ReferenceAnalyzer.Core
 				.Select(reference => new Reference() { Project = reference.Name, UsagesInSource = 1 })
 				.OrderBy(n => n.Project);
 
-			proj;
-
-			var actualReferences = new[]
-			{
-				new ActualReference("", new []{new ReferenceOccurence(0, new ReferenceLocation())}),
-				new ActualReference("", new []{new ReferenceOccurence(0, new ReferenceLocation())})
-
-			};
-			return new ReferencesReport(Enumerable.Empty<string>(), actualReferences);
+			proj;*/
 		}
 	}
 }
