@@ -6,4 +6,14 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ReactiveUI" Version="11.4.1" />
+    <PackageReference Include="ReactiveUI.Events.WPF" Version="11.4.1" />
+    <PackageReference Include="ReactiveUI.WPF" Version="11.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceAnalyzer.Core\ReferenceAnalyzer.Core.csproj" />
+  </ItemGroup>
+
 </Project>
