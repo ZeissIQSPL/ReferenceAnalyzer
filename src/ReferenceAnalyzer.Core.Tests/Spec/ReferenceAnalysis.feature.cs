@@ -218,6 +218,9 @@ this.ScenarioInitialize(scenarioInfo);
 #line 29
  testRunner.And("nunit.framework should not be in actual references", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
+#line 30
+ testRunner.And("No diagnostics should be reported", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
             }
             this.ScenarioCleanup();
         }

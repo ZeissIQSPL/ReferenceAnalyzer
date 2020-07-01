@@ -27,3 +27,4 @@ Scenario: NuGet reference
 	When I run analysis for Project1
 	Then Only xunit.assert should be in actual references
 	And nunit.framework should not be in actual references
+	And No diagnostics should be reported

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using FluentAssertions;
+using Moq;
 using TechTalk.SpecFlow;
 
 namespace ReferenceAnalyzer.Core.Tests
@@ -11,10 +12,15 @@ namespace ReferenceAnalyzer.Core.Tests
     {
 	    private readonly ReferenceAnalyzer _sut;
 	    private ReferencesReport _result;
+        private string _sinkOutput;
 
 	    public ReferenceAnalysisSteps()
-	    {
-		    _sut = new ReferenceAnalyzer();
+        {
+            var sinkMock = new Mock<IMessageSink>();
+            sinkMock.Setup(m => m.Write(It.IsAny<string>()))
+                .Callback<string>(m => _sinkOutput = _sinkOutput + m + "\n");
+
+            _sut = new ReferenceAnalyzer(sinkMock.Object);
 	    }
 
         [Given(@"I have a solution (.*)")]
@@ -56,5 +62,12 @@ namespace ReferenceAnalyzer.Core.Tests
         {
             _result.ActualReferences.Select(r => r.Target).Should().NotContain(referenceName);
         }
+
+        [Then(@"No diagnostics should be reported")]
+        public void ThenNoDiagnosticsShouldBeReported()
+        {
+            _sinkOutput.ToLower().Should().NotContain("error");
+        }
+
     }
 }
