@@ -2,10 +2,10 @@
   <PropertyGroup>
     <SolutionDir Condition=" '$(SolutionDir)' == '' ">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), ReferenceAnalyzer.sln))/</SolutionDir>
     <BuildDir>$(SolutionDir)build/</BuildDir>
-    <BaseIntermediateOutputPath>$(BuildDir)obj/$(_Platform)/$(Configuration)/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BuildDir)obj/$(_Platform)/$(Configuration)/$(MSBuildProjectName)/</IntermediateOutputPath>
-    <MSBuildProjectExtensionsPath>$(IntermediateOutputPath)</MSBuildProjectExtensionsPath>
-    <OutputPath>$(BuildDir)bin/$(_Platform)/$(Configuration)/$(TargetFramework)/</OutputPath>
+    <BaseIntermediateOutputPath>$(BuildDir)/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)/$(Configuration)</IntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+    <OutputPath>$(BuildDir)/bin/$(Platform)/$(Configuration)/</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
   </PropertyGroup>
 </Project>
