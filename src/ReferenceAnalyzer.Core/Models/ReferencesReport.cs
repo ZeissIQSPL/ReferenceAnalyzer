@@ -7,15 +7,16 @@ namespace ReferenceAnalyzer.Core
 {
 	public class ReferencesReport
 	{
-		public ReferencesReport(IEnumerable<string> definedReferences, IEnumerable<ActualReference> actualReferences)
+		public ReferencesReport(string project, IEnumerable<string> definedReferences, IEnumerable<ActualReference> actualReferences)
 		{
-			DefinedReferences = definedReferences;
+            Project = project;
+            DefinedReferences = definedReferences;
 			ActualReferences = actualReferences;
 		}
 
 		public IEnumerable<ActualReference> ActualReferences { get; }
-
-		public IEnumerable<string> DefinedReferences { get; }
+        public string Project { get; }
+        public IEnumerable<string> DefinedReferences { get; }
 
 		public int ReferencesTo(string target)
 		{

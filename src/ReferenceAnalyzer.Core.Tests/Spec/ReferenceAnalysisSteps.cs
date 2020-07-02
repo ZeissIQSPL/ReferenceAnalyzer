@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using TechTalk.SpecFlow;
@@ -12,6 +14,7 @@ namespace ReferenceAnalyzer.Core.Tests
     {
 	    private readonly ReferenceAnalyzer _sut;
 	    private ReferencesReport _result;
+        private IEnumerable<ReferencesReport> _manyResults;
         private string _sinkOutput;
 
 	    public ReferenceAnalysisSteps()
@@ -67,6 +70,27 @@ namespace ReferenceAnalyzer.Core.Tests
         public void ThenNoDiagnosticsShouldBeReported()
         {
             _sinkOutput.ToLower().Should().NotContain("error");
+        }
+
+        [When(@"I run full analysis")]
+        public async Task WhenIRunFullAnalysis()
+        {
+            var enumerable = _sut.AnalyzeAll();
+            var results = new List<ReferencesReport>();
+            await foreach (var result in enumerable)
+            {
+                results.Add(result);
+            }
+
+            _manyResults = results;
+        }
+
+        [Then(@"Reports for all three should be returned")]
+        public void ThenReportsForAllThreeShouldBeReturned()
+        {
+            _manyResults.Should().Contain(r => r.Project == "Project1");
+            _manyResults.Should().Contain(r => r.Project == "Project2");
+            _manyResults.Should().Contain(r => r.Project == "Project3");
         }
 
     }

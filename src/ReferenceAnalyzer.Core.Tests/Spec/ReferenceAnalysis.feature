@@ -28,3 +28,8 @@ Scenario: NuGet reference
 	Then Only xunit.assert should be in actual references
 	And nunit.framework should not be in actual references
 	And No diagnostics should be reported
+
+Scenario: Analyzing all
+	Given I have a solution two_references_one_unused
+	When I run full analysis
+	Then Reports for all three should be returned

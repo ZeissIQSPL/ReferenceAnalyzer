@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.MSBuild;
 
 namespace ReferenceAnalyzer.Core
@@ -99,12 +98,15 @@ namespace ReferenceAnalyzer.Core
                 .Select(reference => reference.Name)
                 .OrderBy(n => n);
 
-			return new ReferencesReport(definedReferences, actualReferences);
+			return new ReferencesReport(project.Name, definedReferences, actualReferences);
 		}
-	}
 
-    public interface IMessageSink
-    {
-        void Write(string message);
-    }
+        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()
+        {
+            foreach (var project in _projects)
+            {
+                yield return await Analyze(project);
+            }
+        }
+	}
 }
