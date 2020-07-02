@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.MSBuild;
 
 namespace ReferenceAnalyzer.Core
@@ -32,13 +33,13 @@ namespace ReferenceAnalyzer.Core
 
         public async Task Load(string solution)
 		{
-            var properties = new Dictionary<string, string>() {
+            /*var properties = new Dictionary<string, string>() {
 				{"AlwaysCompileMarkupFilesInSeparateDomain", "false" },
 				{"Configuration", "Debug"},
 				{"Platform", "x64"}
-			};
+			};*/
 
-			using var workspace = MSBuildWorkspace.Create(properties);
+			using var workspace = MSBuildWorkspace.Create(/*properties*/);
 
 			var loadedSolution = await workspace.OpenSolutionAsync(solution);
 
@@ -85,7 +86,7 @@ namespace ReferenceAnalyzer.Core
                 throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
             }
 
-			var visitor = new RoslynVisitor(compilation);
+            var visitor = new RoslynVisitor(compilation);
 
 			visitor.VisitNamespace(compilation.Assembly.GlobalNamespace);
 
