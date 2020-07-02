@@ -1,19 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="ReactiveUI" Version="11.4.1" />
-    <PackageReference Include="ReactiveUI.Events.WPF" Version="11.4.1" />
-    <PackageReference Include="ReactiveUI.WPF" Version="11.4.1" />
+    <PackageReference Include="ReactiveUI.Events.WPF" />
+    <PackageReference Include="ReactiveUI.WPF" />
+    <PackageReference Include="ReactiveUI" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\ReferenceAnalyzer.Core\ReferenceAnalyzer.Core.csproj" />
+    <ProjectReference Include="../ReferenceAnalyzer.Core/ReferenceAnalyzer.Core.csproj" />
   </ItemGroup>
-
+  <Import Project="$(SolutionDir)ReferenceAnalyzer.Common.targets" />
 </Project>

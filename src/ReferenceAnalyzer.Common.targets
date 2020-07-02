@@ -1,0 +1,19 @@
+<Project>
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.79" />
+  <PropertyGroup>
+    <PackageId>$(AssemblyName)</PackageId>
+    <Version>0.0.1</Version>
+    <Copyright>Copyright (c) 2020 OptiNav Sp. z o.o.</Copyright>
+    <Authors>Artur Laskowski; Mateusz Małecki</Authors>
+    <Company>OptiNav Sp. z o.o.</Company>
+    <Description></Description>
+    <Summary></Summary>
+    <PackageIcon></PackageIcon>
+    <PackageIconUrl></PackageIconUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/OptiNav/ReferenceAnalyzer</PackageProjectUrl>
+    <PackageTags></PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/OptiNav/ReferenceAnalyzer</RepositoryUrl>
+  </PropertyGroup>
+</Project>
