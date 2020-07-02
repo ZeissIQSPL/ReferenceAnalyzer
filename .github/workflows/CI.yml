@@ -23,6 +23,10 @@ jobs:
     - name: Build
       working-directory: ./src
       run: dotnet build --configuration Release --no-restore
+    - name: Prepare test solutions
+      working-directory: ./test_samples
+      run: Get-ChildItem -Directory | Foreach {dotnet restore $_.fullname}
+      shell: pwsh
     - name: Test
       working-directory: ./src
       run: dotnet test --no-restore --verbosity normal
