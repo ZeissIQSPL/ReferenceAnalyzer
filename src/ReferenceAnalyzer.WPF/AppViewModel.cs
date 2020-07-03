@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using DynamicData;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
@@ -32,7 +33,7 @@ namespace ReferenceAnalyzer.WPF
                 Observable.Create<ReferencesReport>(o => 
                     LoadReferencesReports(projectProvider, o)), canLoad);
             
-            Load.ThrownExceptions.Subscribe(_ => { });
+            Load.ThrownExceptions.Subscribe(error => MessageBox.Show("Error catched: " + error.Message));
 
             Load.ToObservableChangeSet()
                 .Bind(out _Projects)

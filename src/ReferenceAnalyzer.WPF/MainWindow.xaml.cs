@@ -2,6 +2,7 @@
 using ReferenceAnalyzer.WPF.Utilities;
 using System.Linq;
 using System.Reactive.Disposables;
+using ReferenceAnalyzer.Core;
 
 namespace ReferenceAnalyzer.WPF
 {
@@ -13,7 +14,7 @@ namespace ReferenceAnalyzer.WPF
         public MainWindow()
         {
             InitializeComponent();
-            ViewModel = new AppViewModel(new Settings(), new FakeProjectProvider());
+            ViewModel = new AppViewModel(new Settings(), new ReferenceAnalyzer.Core.ReferenceAnalyzer(new MessageSink()));
 
             this.WhenActivated(disposableRegistration =>
             {

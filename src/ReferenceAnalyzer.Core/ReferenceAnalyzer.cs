@@ -98,6 +98,7 @@ namespace ReferenceAnalyzer.Core
 
             var actualReferences = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
+                .Where(g => g.Key != null)
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .OrderBy(r => r.Target);
 
