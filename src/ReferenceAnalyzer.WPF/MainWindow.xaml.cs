@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using ReferenceAnalyzer.WPF.Utilities;
+using System.Linq;
 using System.Reactive.Disposables;
 
 namespace ReferenceAnalyzer.WPF
@@ -22,6 +23,18 @@ namespace ReferenceAnalyzer.WPF
                     ).DisposeWith(disposableRegistration);
 
                 this.BindCommand(ViewModel, viewModel => viewModel.Load, view => view.LoadCommand).DisposeWith(disposableRegistration);
+
+                this.OneWayBind(ViewModel, viewModel => viewModel.Projects, view => view.Projects.ItemsSource).DisposeWith(disposableRegistration);
+
+                this.Bind(ViewModel, viewModel => viewModel.SelectedProject,
+                        view => view.Projects.SelectedItem)
+                    .DisposeWith(disposableRegistration);
+
+                this.OneWayBind(ViewModel, viewModel => viewModel.SelectedProject.ActualReferences, view => view.ActualReferences.ItemsSource).DisposeWith(disposableRegistration);
+
+                this.OneWayBind(ViewModel, viewModel => viewModel.SelectedProject.DefinedReferences, view => view.DefinedReferences.ItemsSource).DisposeWith(disposableRegistration);
+                
+                this.OneWayBind(ViewModel, viewModel => viewModel.SelectedProject.DiffReferences, view => view.DiffReferences.ItemsSource).DisposeWith(disposableRegistration);
             });
         }
     }

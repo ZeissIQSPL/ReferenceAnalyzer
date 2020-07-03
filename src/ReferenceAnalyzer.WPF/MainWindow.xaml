@@ -10,10 +10,20 @@
         mc:Ignorable="d"
         Title="ReferenceExplorer" Height="450" Width="800">
     <Grid>
-        <DockPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0">
             <TextBox Name="Path" DockPanel.Dock="Top"></TextBox>
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
-            <ListView Name="Projects" DockPanel.Dock="Top" DisplayMemberPath="."/>
+            <ListView Name="Projects" DockPanel.Dock="Bottom" DisplayMemberPath="."></ListView>
         </DockPanel>
+        <ListView Name="DefinedReferences" Grid.Column="1" DisplayMemberPath="."/>
+        <ListView Name="ActualReferences" Grid.Column="2" DisplayMemberPath="Target"/>
+        <ListView Name="DiffReferences" Grid.Column="3" DisplayMemberPath="."/>
+
     </Grid>
 </reactiveui:ReactiveWindow>

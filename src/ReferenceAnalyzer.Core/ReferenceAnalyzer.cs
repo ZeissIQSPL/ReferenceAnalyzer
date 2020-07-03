@@ -9,10 +9,20 @@ using Microsoft.CodeAnalysis.MSBuild;
 
 namespace ReferenceAnalyzer.Core
 {
-	public class ReferenceAnalyzer
+    public interface IReferenceAnalyzer
+    {
+        IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath);
+
+        IDictionary<string, string> BuildProperties { get; set; }
+    }
+
+	public class ReferenceAnalyzer : IReferenceAnalyzer
 	{
         private readonly IMessageSink _messageSink;
         private List<Project> _projects;
+
+
+        public IDictionary<string, string> BuildProperties { get; set; } 
 
         public ReferenceAnalyzer(IMessageSink messageSink)
         {
@@ -32,13 +42,10 @@ namespace ReferenceAnalyzer.Core
 
         public async Task Load(string solution)
 		{
-            /*var properties = new Dictionary<string, string>() {
-				{"AlwaysCompileMarkupFilesInSeparateDomain", "false" },
-				{"Configuration", "Debug"},
-				{"Platform", "x64"}
+            /*var properties 
 			};*/
 
-			using var workspace = MSBuildWorkspace.Create(/*properties*/);
+			using var workspace = MSBuildWorkspace.Create(BuildProperties);
 
 			var loadedSolution = await workspace.OpenSolutionAsync(solution);
 
@@ -106,6 +113,15 @@ namespace ReferenceAnalyzer.Core
             foreach (var project in _projects)
             {
                 yield return await Analyze(project);
+            }
+        }
+
+        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
+        {
+            await Load(solutionPath);
+            await foreach (var a in AnalyzeAll())
+            {
+                yield return a;
             }
         }
 	}
