@@ -12,7 +12,7 @@ namespace ReferenceAnalyzer.WPF
         public MainWindow()
         {
             InitializeComponent();
-            ViewModel = new AppViewModel(new Settings());
+            ViewModel = new AppViewModel(new Settings(), new FakeProjectProvider());
 
             this.WhenActivated(disposableRegistration =>
             {
@@ -20,6 +20,8 @@ namespace ReferenceAnalyzer.WPF
                     viewModel => viewModel.Path,
                     view => view.Path.Text
                     ).DisposeWith(disposableRegistration);
+
+                this.BindCommand(ViewModel, viewModel => viewModel.Load, view => view.LoadCommand).DisposeWith(disposableRegistration);
             });
         }
     }

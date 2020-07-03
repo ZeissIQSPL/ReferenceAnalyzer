@@ -12,6 +12,8 @@
     <Grid>
         <DockPanel>
             <TextBox Name="Path" DockPanel.Dock="Top"></TextBox>
+            <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
+            <ListView Name="Projects" DockPanel.Dock="Top" DisplayMemberPath="."/>
         </DockPanel>
     </Grid>
 </reactiveui:ReactiveWindow>
