@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace ReferenceAnalyzer.Core.Tests.Spec
+namespace ReferenceAnalyzer.Core.Tests.Specs
 {
     using TechTalk.SpecFlow;
     using System;
@@ -40,8 +40,8 @@ namespace ReferenceAnalyzer.Core.Tests.Spec
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "ReferenceAnalysis", "\tIn order to know what reference to remove\r\n\tAs a consumer of the library\r\n\tI wan" +
-                    "t to know a number of actual references", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "ReferenceAnalysis", "\tIn order to know what reference to remove\n\tAs a consumer of the library\n\tI want " +
+                    "to know a number of actual references", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
