@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -24,15 +26,29 @@ namespace ReferenceAnalyzer.Core.Tests
                 .Callback<string>(m => _sinkOutput = _sinkOutput + m + "\n");
 
             _sut = new ReferenceAnalyzer(sinkMock.Object);
+                
+
 	    }
 
         [Given(@"I have a solution (.*)")]
         public void GivenIHaveASolution(string solution)
         {
-            var samplesPath = Assembly.GetExecutingAssembly().CodeBase?.Split("src")[0] + "test_samples";
+            string samplesPath = GetTestSamplesLocation();
             var slnPath = samplesPath + "/" + solution + "/" + solution + ".sln";
             var path = new Uri(slnPath).AbsolutePath;
+            var process = Process.Start("dotnet.exe", "restore " + path);
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Could not restore, exit code {process.ExitCode}");
+            }
+
             _sut.Load(path).Wait();
+        }
+
+        private static string GetTestSamplesLocation()
+        {
+            return Assembly.GetExecutingAssembly().CodeBase?.Split("src")[0] + "test_samples";
         }
 
         [When(@"I run analysis for (.*)")]

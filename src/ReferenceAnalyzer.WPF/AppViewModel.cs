@@ -17,7 +17,6 @@ namespace ReferenceAnalyzer.WPF
         private ReferencesReport _SelectedProject;
         private readonly ReadOnlyObservableCollection<ReferencesReport> _Projects;
 
-
         public AppViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
         {
             projectProvider.BuildProperties = new Dictionary<string, string>()

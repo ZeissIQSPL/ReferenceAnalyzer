@@ -22,7 +22,7 @@ namespace ReferenceAnalyzer.Core
         private List<Project> _projects;
 
 
-        public IDictionary<string, string> BuildProperties { get; set; } 
+        public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
 
         public ReferenceAnalyzer(IMessageSink messageSink)
         {
