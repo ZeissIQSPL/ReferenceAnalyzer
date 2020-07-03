@@ -1,3 +1,4 @@
+# macOS
 .DS_Store
 
 ## Ignore Visual Studio temporary files, build results, and
@@ -435,4 +436,5 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # ReferenceAnalyzer
-!/test_samples/**
+test_samples/**/[Bb]in/
+test_samples/**/[Oo]bj/
