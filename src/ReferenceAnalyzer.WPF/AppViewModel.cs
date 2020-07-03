@@ -31,7 +31,8 @@ namespace ReferenceAnalyzer.WPF
             Load = ReactiveCommand.CreateFromObservable(() => 
                 Observable.Create<ReferencesReport>(o => 
                     LoadReferencesReports(projectProvider, o)), canLoad);
-
+            
+            Load.ThrownExceptions.Subscribe(_ => { });
 
             Load.ToObservableChangeSet()
                 .Bind(out _Projects)

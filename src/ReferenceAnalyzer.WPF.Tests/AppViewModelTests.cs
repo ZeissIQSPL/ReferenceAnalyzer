@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Reactive.Testing;
 using Moq;
+using ReactiveUI;
 using ReactiveUI.Testing;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.Util;
@@ -22,11 +23,9 @@ namespace ReferenceAnalyzer.WPF.Tests
         private AppViewModel _Sut;
         private List<ReferencesReport> _Projects;
         private List<ActualReference> _ReferencedProjects;
-        private TestScheduler _Scheduler;
 
-        public AppViewModelTests() => new TestScheduler().With(scheduler =>
+        public AppViewModelTests()
         {
-            _Scheduler = scheduler;
             _providerMock = new Mock<IReferenceAnalyzer>();
             _ReferencedProjects = new List<ActualReference>
             {
@@ -46,7 +45,7 @@ namespace ReferenceAnalyzer.WPF.Tests
             _SettingsMock.SetupSet(x => x.SolutionPath = It.IsAny<string>()).Verifiable();
 
             _Sut = new AppViewModel(_SettingsMock.Object, _providerMock.Object);
-        });
+        }
 
         [Fact]
         public void Instantiates()
@@ -85,23 +84,23 @@ namespace ReferenceAnalyzer.WPF.Tests
         }
 
         [Fact]
-        public void LoadedServiceListUpdated()
+        public void LoadedServiceListUpdated() => new TestScheduler().With(scheduler =>
         {
-            _Sut.Path = _Path;
-            _Sut.Load.Execute().Subscribe();
+            var sut = new AppViewModel(_SettingsMock.Object, _providerMock.Object);
 
-            _Scheduler.AdvanceBy(3);
+            sut.Path = _Path;
+            sut.Load.Execute().Subscribe();
 
-            _Sut.Projects.Should().NotBeNullOrEmpty();
-            _Sut.Projects.Should().BeEquivalentTo(_Projects);
-        }
+            scheduler.AdvanceBy(3);
+
+            sut.Projects.Should().NotBeNullOrEmpty();
+            sut.Projects.Should().BeEquivalentTo(_Projects);
+        });
 
         [Fact]
         public void LoadedProjectSelectedShowsReferenceList()
         {
             _Sut.Load.Execute().Subscribe();
-
-            _Scheduler.AdvanceBy(3);
 
             _Sut.SelectedProject = _Sut.Projects.First();
 
@@ -123,6 +122,23 @@ namespace ReferenceAnalyzer.WPF.Tests
             _Sut.Path = newPath;
 
             _SettingsMock.VerifySet(x => x.SolutionPath = newPath);
+        }
+
+        [Fact]
+        public void ExceptionThrownInsideLoadingCommand()
+        {
+
+            _providerMock.Setup(m => m.AnalyzeAll(It.IsAny<string>())).Throws<InvalidOperationException>();
+
+            _Sut.Path = "any";
+
+            var wasError = false;
+
+            _Sut.Load.ThrownExceptions.Subscribe(_ => wasError = true);
+
+            _Sut.Load.Execute().Subscribe();
+
+            wasError.Should().BeTrue();
         }
 
     }
