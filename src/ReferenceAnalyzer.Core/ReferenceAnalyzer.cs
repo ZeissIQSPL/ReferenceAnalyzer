@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,26 +9,26 @@ using Microsoft.CodeAnalysis.MSBuild;
 
 namespace ReferenceAnalyzer.Core
 {
-    public interface IReferenceAnalyzer
+    public class ReferenceAnalyzer : IReferenceAnalyzer
     {
-        IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath);
-
-        IDictionary<string, string> BuildProperties { get; set; }
-    }
-
-	public class ReferenceAnalyzer : IReferenceAnalyzer
-	{
         private readonly IMessageSink _messageSink;
         private List<Project> _projects;
-
-
-        public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
 
         public ReferenceAnalyzer(IMessageSink messageSink)
         {
             _messageSink = messageSink;
 
             InitializeMsBuild();
+        }
+
+
+        public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
+
+        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
+        {
+            await Load(solutionPath);
+            await foreach (var a in AnalyzeAll())
+                yield return a;
         }
 
         private static void InitializeMsBuild()
@@ -41,18 +41,13 @@ namespace ReferenceAnalyzer.Core
         }
 
         public async Task Load(string solution)
-		{
-            /*var properties 
-			};*/
+        {
+            using var workspace = MSBuildWorkspace.Create(BuildProperties);
 
-			using var workspace = MSBuildWorkspace.Create(BuildProperties);
-
-			var loadedSolution = await workspace.OpenSolutionAsync(solution);
+            var loadedSolution = await workspace.OpenSolutionAsync(solution);
 
             foreach (var d in workspace.Diagnostics)
-            {
                 _messageSink.Write($"{d.Kind}: {d.Message}");
-            }
 
             if (workspace.Diagnostics.Any(d => d.Kind == WorkspaceDiagnosticKind.Failure))
             {
@@ -62,27 +57,25 @@ namespace ReferenceAnalyzer.Core
                 throw new Exception("Failed opening solution: \n" + string.Concat(errors));
             }
 
-			_projects = loadedSolution.Projects.ToList();
-		}
+            _projects = loadedSolution.Projects.ToList();
+        }
 
-		public async Task<ReferencesReport> Analyze(string target)
-		{
-			var project = _projects.First(p => p.Name == target);
+        public async Task<ReferencesReport> Analyze(string target)
+        {
+            var project = _projects.First(p => p.Name == target);
 
-			return await Analyze(project);
+            return await Analyze(project);
+        }
 
-		}
+        private async Task<ReferencesReport> Analyze(Project project)
+        {
+            var compilation = await project.GetCompilationAsync();
 
-		private async Task<ReferencesReport> Analyze(Project project)
-		{
-			var compilation = await project.GetCompilationAsync();
-
-            var compilationResult = compilation.Emit(new MemoryStream());
+            await using var dummy = new MemoryStream();
+            var compilationResult = compilation.Emit(dummy);
 
             foreach (var d in compilationResult.Diagnostics)
-            {
                 _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
-            }
 
             if (compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
@@ -94,7 +87,7 @@ namespace ReferenceAnalyzer.Core
 
             var visitor = new RoslynVisitor(compilation);
 
-			visitor.VisitNamespace(compilation.Assembly.GlobalNamespace);
+            visitor.VisitNamespace(compilation.Assembly.GlobalNamespace);
 
             var actualReferences = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
@@ -102,28 +95,17 @@ namespace ReferenceAnalyzer.Core
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .OrderBy(r => r.Target);
 
-			var definedReferences = compilation.ReferencedAssemblyNames
+            var definedReferences = compilation.ReferencedAssemblyNames
                 .Select(reference => reference.Name)
                 .OrderBy(n => n);
 
-			return new ReferencesReport(project.Name, definedReferences, actualReferences);
-		}
+            return new ReferencesReport(project.Name, definedReferences, actualReferences);
+        }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()
         {
             foreach (var project in _projects)
-            {
                 yield return await Analyze(project);
-            }
         }
-
-        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
-        {
-            await Load(solutionPath);
-            await foreach (var a in AnalyzeAll())
-            {
-                yield return a;
-            }
-        }
-	}
+    }
 }

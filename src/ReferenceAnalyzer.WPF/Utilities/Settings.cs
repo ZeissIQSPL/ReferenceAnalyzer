@@ -1,32 +1,26 @@
-﻿using System.Configuration;
+using System.Configuration;
 
 namespace ReferenceAnalyzer.WPF.Utilities
 {
     public class Settings : ISettings
     {
-        private readonly Configuration _Settings;
-        private const string _SolutionPathKey = "SolutionPath";
+        private const string SolutionPathKey = "SolutionPath";
+        private readonly Configuration _settings;
+
+        public Settings() => _settings = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
         public string SolutionPath
         {
-            get => _Settings.AppSettings.Settings[_SolutionPathKey]?.Value;
+            get => _settings.AppSettings.Settings[SolutionPathKey]?.Value;
             set
             {
-                var settings = _Settings.AppSettings.Settings;
-                if (settings[_SolutionPathKey] == null)
-                {
-                    settings.Add(_SolutionPathKey, value);
-                }
+                var settings = _settings.AppSettings.Settings;
+                if (settings[SolutionPathKey] == null)
+                    settings.Add(SolutionPathKey, value);
                 else
-                {
-                    settings[_SolutionPathKey].Value = value;
-                }
-                _Settings.Save(ConfigurationSaveMode.Modified);
+                    settings[SolutionPathKey].Value = value;
+                _settings.Save(ConfigurationSaveMode.Modified);
             }
         }
-        public Settings()
-        {
-            _Settings = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-        }
     }
-
 }

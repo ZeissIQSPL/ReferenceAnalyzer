@@ -1,84 +1,114 @@
-﻿using FluentAssertions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using Microsoft.Reactive.Testing;
 using Moq;
-using ReactiveUI;
 using ReactiveUI.Testing;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.Util;
 using ReferenceAnalyzer.WPF.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
 using Xunit;
 
 namespace ReferenceAnalyzer.WPF.Tests
 {
     public class AppViewModelTests
     {
-        private const string _Path = "samplePath";
-        private Mock<ISettings> _SettingsMock;
-        private Mock<IReferenceAnalyzer> _providerMock;
-        private AppViewModel _Sut;
-        private List<ReferencesReport> _Projects;
-        private List<ActualReference> _ReferencedProjects;
-
         public AppViewModelTests()
         {
             _providerMock = new Mock<IReferenceAnalyzer>();
-            _ReferencedProjects = new List<ActualReference>
+            var referencedProjects = new List<ActualReference>
             {
                 new ActualReference("project1", Enumerable.Empty<ReferenceOccurrence>())
             };
 
-            _Projects = new List<ReferencesReport>
+            _projects = new List<ReferencesReport>
             {
-                new ReferencesReport("proj1", new [] {"ref1","ref2" }, _ReferencedProjects),
-                new ReferencesReport("proj2", new [] {"ref2", "ref3"}, null)
+                new ReferencesReport("proj1", new[] {"ref1", "ref2"}, referencedProjects),
+                new ReferencesReport("proj2", new[] {"ref2", "ref3"}, null)
             };
-            _providerMock.Setup(m => m.AnalyzeAll(_Path))
-                .Returns(_Projects.ToAsync());
+            _providerMock.Setup(m => m.AnalyzeAll(Path))
+                .Returns(_projects.ToAsync());
 
-            _SettingsMock = new Mock<ISettings>();
-            _SettingsMock.Setup(x => x.SolutionPath).Returns(_Path);
-            _SettingsMock.SetupSet(x => x.SolutionPath = It.IsAny<string>()).Verifiable();
+            _settingsMock = new Mock<ISettings>();
+            _settingsMock.Setup(x => x.SolutionPath).Returns(Path);
+            _settingsMock.SetupSet(x => x.SolutionPath = It.IsAny<string>()).Verifiable();
 
-            _Sut = new AppViewModel(_SettingsMock.Object, _providerMock.Object);
+            _sut = new AppViewModel(_settingsMock.Object, _providerMock.Object);
         }
 
-        [Fact]
-        public void Instantiates()
-        {
-            Action a = () => new AppViewModel(_SettingsMock.Object, _providerMock.Object);
-
-            a.Should().NotThrow();
-        }
+        private const string Path = "samplePath";
+        private readonly Mock<ISettings> _settingsMock;
+        private readonly Mock<IReferenceAnalyzer> _providerMock;
+        private readonly AppViewModel _sut;
+        private readonly List<ReferencesReport> _projects;
 
         [Fact]
-        public void NoPathButtonDisabled()
+        public void ChangingPathSavedInSettings()
         {
-            var canExecute = true;
-            _Sut.Path = "";
-            _Sut.Load.CanExecute.Subscribe(x => canExecute = x);
-            canExecute.Should().Be(false);
+            var newPath = "newPath";
+            _sut.Path = newPath;
+
+            _settingsMock.VerifySet(x => x.SolutionPath = newPath);
         }
 
         [Fact]
         public void CorrectPathSetEnabled()
         {
             var canExecute = false;
-            _Sut.Path = "C:/Path";
-            _Sut.Load.CanExecute.Subscribe(x => canExecute = x);
+            _sut.Path = "C:/Path";
+            _sut.Load.CanExecute.Subscribe(x => canExecute = x);
             canExecute.Should().Be(true);
+        }
+
+        [Fact]
+        public void DefaultSolutionPathTakenFromSettings()
+        {
+            var expected = Path;
+
+            _sut.Path.Should().Be(expected);
+        }
+
+        [Fact]
+        public void ExceptionThrownInsideLoadingCommand()
+        {
+            _providerMock.Setup(m => m.AnalyzeAll(It.IsAny<string>())).Throws<InvalidOperationException>();
+
+            _sut.Path = "any";
+
+            var wasError = false;
+
+            _sut.Load.ThrownExceptions.Subscribe(_ => wasError = true);
+
+            _sut.Load.Execute().Subscribe();
+
+            wasError.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Instantiates()
+        {
+            Action a = () => _ = new AppViewModel(_settingsMock.Object, _providerMock.Object);
+
+            a.Should().NotThrow();
+        }
+
+        [Fact]
+        public void LoadedProjectSelectedShowsReferenceList()
+        {
+            _sut.Load.Execute().Subscribe();
+
+            _sut.SelectedProject = _sut.Projects.First();
+
+            _sut.SelectedProject.DefinedReferences.Should().NotBeNull();
         }
 
         [Fact]
         public void LoadedServiceInvoked()
         {
-            var path = _Path;
-            _Sut.Path = path;
-            _Sut.Load.Execute().Subscribe();
+            var path = Path;
+            _sut.Path = path;
+            _sut.Load.Execute().Subscribe();
 
             _providerMock.Verify(x => x.AnalyzeAll(path));
         }
@@ -86,60 +116,25 @@ namespace ReferenceAnalyzer.WPF.Tests
         [Fact]
         public void LoadedServiceListUpdated() => new TestScheduler().With(scheduler =>
         {
-            var sut = new AppViewModel(_SettingsMock.Object, _providerMock.Object);
-
-            sut.Path = _Path;
+            var sut = new AppViewModel(_settingsMock.Object, _providerMock.Object)
+            {
+                Path = Path
+            };
             sut.Load.Execute().Subscribe();
 
             scheduler.AdvanceBy(3);
 
             sut.Projects.Should().NotBeNullOrEmpty();
-            sut.Projects.Should().BeEquivalentTo(_Projects);
+            sut.Projects.Should().BeEquivalentTo(_projects);
         });
 
         [Fact]
-        public void LoadedProjectSelectedShowsReferenceList()
+        public void NoPathButtonDisabled()
         {
-            _Sut.Load.Execute().Subscribe();
-
-            _Sut.SelectedProject = _Sut.Projects.First();
-
-            _Sut.SelectedProject.DefinedReferences.Should().NotBeNull();
+            var canExecute = true;
+            _sut.Path = "";
+            _sut.Load.CanExecute.Subscribe(x => canExecute = x);
+            canExecute.Should().Be(false);
         }
-
-        [Fact]
-        public void DefaultSolutionPathTakenFromSettings()
-        {
-            var expected = _Path;
-
-            _Sut.Path.Should().Be(expected);
-        }
-
-        [Fact]
-        public void ChangingPathSavedInSettings()
-        {
-            var newPath = "newPath";
-            _Sut.Path = newPath;
-
-            _SettingsMock.VerifySet(x => x.SolutionPath = newPath);
-        }
-
-        [Fact]
-        public void ExceptionThrownInsideLoadingCommand()
-        {
-
-            _providerMock.Setup(m => m.AnalyzeAll(It.IsAny<string>())).Throws<InvalidOperationException>();
-
-            _Sut.Path = "any";
-
-            var wasError = false;
-
-            _Sut.Load.ThrownExceptions.Subscribe(_ => wasError = true);
-
-            _Sut.Load.Execute().Subscribe();
-
-            wasError.Should().BeTrue();
-        }
-
     }
 }

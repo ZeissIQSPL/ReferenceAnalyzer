@@ -1,6 +1,6 @@
-﻿namespace ReferenceAnalyzer.Core
+namespace ReferenceAnalyzer.Core
 {
-	public class ReferenceLocation
-	{
-	}
+    public class ReferenceLocation
+    {
+    }
 }

@@ -1,4 +1,4 @@
-﻿namespace ReferenceAnalyzer.Core
+namespace ReferenceAnalyzer.Core
 {
     public interface IMessageSink
     {
