@@ -8,6 +8,7 @@ namespace ReferenceAnalyzer.WPF.Utilities
     internal class FakeProjectProvider : IReferenceAnalyzer
     {
         public IDictionary<string, string> BuildProperties { get; set; }
+        public bool ThrowOnCompilationFailures { get; set; }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
         {
@@ -20,5 +21,7 @@ namespace ReferenceAnalyzer.WPF.Utilities
                     }
                 ));
         }
+
+        public Task<ReferencesReport> Analyze(string target) => throw new System.NotImplementedException();
     }
 }

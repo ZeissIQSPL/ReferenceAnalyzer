@@ -23,6 +23,7 @@ namespace ReferenceAnalyzer.Core
 
 
         public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
+        public bool ThrowOnCompilationFailures { get; set; } = true;
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
         {
@@ -49,7 +50,8 @@ namespace ReferenceAnalyzer.Core
             foreach (var d in workspace.Diagnostics)
                 _messageSink.Write($"{d.Kind}: {d.Message}");
 
-            if (workspace.Diagnostics.Any(d => d.Kind == WorkspaceDiagnosticKind.Failure))
+            if (ThrowOnCompilationFailures &&
+                workspace.Diagnostics.Any(d => d.Kind == WorkspaceDiagnosticKind.Failure))
             {
                 var errors = workspace.Diagnostics
                     .Where(d => d.Kind == WorkspaceDiagnosticKind.Failure)
@@ -77,7 +79,8 @@ namespace ReferenceAnalyzer.Core
             foreach (var d in compilationResult.Diagnostics)
                 _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
 
-            if (compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+            if (ThrowOnCompilationFailures &&
+                compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
             {
                 var errors = compilationResult.Diagnostics
                     .Where(d => d.Severity == DiagnosticSeverity.Error)

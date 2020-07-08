@@ -33,6 +33,7 @@ namespace ReferenceAnalyzer.Core.Tests
             var samplesPath = GetTestSamplesLocation();
             var slnPath = samplesPath + "/" + solution + "/" + solution + ".sln";
             var path = new Uri(slnPath).AbsolutePath;
+
             var process = Process.Start("dotnet.exe", "restore " + path);
             process.WaitForExit();
             if (process.ExitCode != 0)
@@ -41,11 +42,26 @@ namespace ReferenceAnalyzer.Core.Tests
             _sut.Load(path).Wait();
         }
 
+        [Given(@"I Disable throwing on errors")]
+        public void WhenIDisableThrowingOnErrors() => _sut.ThrowOnCompilationFailures = false;
+
         private static string GetTestSamplesLocation() =>
             Assembly.GetExecutingAssembly().CodeBase?.Split("src")[0] + "test_samples";
 
         [When(@"I run analysis for (.*)")]
         public void WhenIRunAnalysis(string target) => _result = _sut.Analyze(target).Result;
+
+        [When(@"I run full analysis")]
+        public async Task WhenIRunFullAnalysis()
+        {
+            var enumerable = _sut.AnalyzeAll();
+            var results = new List<ReferencesReport>();
+            await foreach (var result in enumerable)
+                results.Add(result);
+
+            _manyResults = results;
+        }
+
 
         [Then(@"number of references to (.*) should be (.*)")]
         public void ThenNumberOfReferencesShouldBe(string target, int references) =>
@@ -65,17 +81,6 @@ namespace ReferenceAnalyzer.Core.Tests
 
         [Then(@"No diagnostics should be reported")]
         public void ThenNoDiagnosticsShouldBeReported() => _sinkOutput.ToLower().Should().NotContain("error");
-
-        [When(@"I run full analysis")]
-        public async Task WhenIRunFullAnalysis()
-        {
-            var enumerable = _sut.AnalyzeAll();
-            var results = new List<ReferencesReport>();
-            await foreach (var result in enumerable)
-                results.Add(result);
-
-            _manyResults = results;
-        }
 
         [Then(@"Reports for all three should be returned")]
         public void ThenReportsForAllThreeShouldBeReturned()
