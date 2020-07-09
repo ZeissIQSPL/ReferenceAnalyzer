@@ -17,9 +17,15 @@ namespace ReferenceAnalyzer.WPF
         private readonly ReadOnlyObservableCollection<ReferencesReport> _projects;
         private string _path;
         private ReferencesReport _selectedProject;
+        private bool _stopOnError = true;
 
         public AppViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
         {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+            if (projectProvider == null)
+                throw new ArgumentNullException(nameof(projectProvider));
+
             projectProvider.BuildProperties = new Dictionary<string, string>
             {
                 {"AlwaysCompileMarkupFilesInSeparateDomain", "false"},
@@ -38,7 +44,7 @@ namespace ReferenceAnalyzer.WPF
                     LoadReferencesReports(projectProvider, o)),
                 canLoad);
 
-            Load.ThrownExceptions.Subscribe(error => MessageBox.Show("Error catched: " + error.Message));
+            Load.ThrownExceptions.Subscribe(error => MessageBox.Show("Error caught: " + error.Message));
 
             Load.ToObservableChangeSet()
                 .Bind(out _projects)
@@ -46,6 +52,9 @@ namespace ReferenceAnalyzer.WPF
 
             this.WhenAnyValue(viewModel => viewModel.Path)
                 .Subscribe(x => settings.SolutionPath = x);
+
+            this.WhenAnyValue(viewModel => viewModel.StopOnError)
+                .Subscribe(x => projectProvider.ThrowOnCompilationFailures = x);
         }
 
         public string Path
@@ -64,6 +73,11 @@ namespace ReferenceAnalyzer.WPF
         public ReadOnlyObservableCollection<ReferencesReport> Projects => _projects;
 
         public ReactiveCommand<Unit, ReferencesReport> Load { get; }
+        public bool StopOnError
+        {
+            get => _stopOnError;
+            set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
+        }
 
         private async Task LoadReferencesReports(IReferenceAnalyzer projectProvider, IObserver<ReferencesReport> o)
         {

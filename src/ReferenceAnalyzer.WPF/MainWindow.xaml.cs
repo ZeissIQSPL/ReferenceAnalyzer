@@ -1,3 +1,4 @@
+using System;
 using System.Reactive.Disposables;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
@@ -21,38 +22,42 @@ namespace ReferenceAnalyzer.WPF
             this.WhenActivated(disposableRegistration =>
             {
                 this.Bind(ViewModel,
-                        viewModel => viewModel.Path,
-                        view => view.Path.Text
-                    )
+                    viewModel => viewModel.Path,
+                    view => view.Path.Text)
                     .DisposeWith(disposableRegistration);
 
                 this.BindCommand(ViewModel,
-                        viewModel => viewModel.Load,
-                        view => view.LoadCommand)
+                    viewModel => viewModel.Load,
+                    view => view.LoadCommand)
                     .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                        viewModel => viewModel.Projects,
-                        view => view.Projects.ItemsSource)
+                    viewModel => viewModel.Projects,
+                    view => view.Projects.ItemsSource)
                     .DisposeWith(disposableRegistration);
 
                 this.Bind(ViewModel, viewModel => viewModel.SelectedProject,
-                        view => view.Projects.SelectedItem)
+                    view => view.Projects.SelectedItem)
                     .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                        viewModel => viewModel.SelectedProject.ActualReferences,
-                        view => view.ActualReferences.ItemsSource)
+                    viewModel => viewModel.SelectedProject.ActualReferences,
+                    view => view.ActualReferences.ItemsSource)
                     .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                        viewModel => viewModel.SelectedProject.DefinedReferences,
-                        view => view.DefinedReferences.ItemsSource)
+                    viewModel => viewModel.SelectedProject.DefinedReferences,
+                    view => view.DefinedReferences.ItemsSource)
                     .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                        viewModel => viewModel.SelectedProject.DiffReferences,
-                        view => view.DiffReferences.ItemsSource)
+                    viewModel => viewModel.SelectedProject.DiffReferences,
+                    view => view.DiffReferences.ItemsSource)
+                    .DisposeWith(disposableRegistration);
+
+                this.Bind(ViewModel,
+                    viewModel => viewModel.StopOnError,
+                    view => view.StopOnError.IsChecked)
                     .DisposeWith(disposableRegistration);
             });
         }

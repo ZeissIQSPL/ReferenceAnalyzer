@@ -19,6 +19,10 @@
         <DockPanel Grid.Column="0">
             <TextBox Name="Path" DockPanel.Dock="Top" />
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                <CheckBox Margin="5,5,0,0" Name="StopOnError"></CheckBox>
+                <Label Content="Stop on error"></Label>
+            </StackPanel>
             <ListView Name="Projects" DockPanel.Dock="Bottom" DisplayMemberPath="." />
         </DockPanel>
         <ListView Name="DefinedReferences" Grid.Column="1" DisplayMemberPath="." />
