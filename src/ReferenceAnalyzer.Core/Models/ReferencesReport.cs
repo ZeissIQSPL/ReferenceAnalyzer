@@ -17,9 +17,8 @@ namespace ReferenceAnalyzer.Core
         public string Project { get; }
         public IEnumerable<string> DefinedReferences { get; }
 
-        public IEnumerable<string> DiffReferences => ActualReferences
-            .Select(x => x.Target)
-            .Except(DefinedReferences);
+        public IEnumerable<string> DiffReferences => DefinedReferences
+            .Except(ActualReferences.Select(r => r.Target));
 
 
         public int ReferencesTo(string target)

@@ -9,5 +9,6 @@ namespace ReferenceAnalyzer.Core
         bool ThrowOnCompilationFailures { get; set; }
         IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath);
         Task<ReferencesReport> Analyze(string target);
+        Task Load(string solution);
     }
 }
