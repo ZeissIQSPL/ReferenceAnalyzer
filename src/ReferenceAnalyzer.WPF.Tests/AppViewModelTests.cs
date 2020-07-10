@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using FluentAssertions;
 using Microsoft.Reactive.Testing;
 using Moq;
@@ -98,9 +99,9 @@ namespace ReferenceAnalyzer.WPF.Tests
         {
             _sut.Load.Execute().Subscribe();
 
-            _sut.SelectedProject = _sut.Projects.First();
+            _sut.SelectedProjectReport = _sut.Reports.First();
 
-            _sut.SelectedProject.DefinedReferences.Should().NotBeNull();
+            _sut.SelectedProjectReport.DefinedReferences.Should().NotBeNull();
         }
 
         [Fact]
@@ -124,8 +125,8 @@ namespace ReferenceAnalyzer.WPF.Tests
 
             scheduler.AdvanceBy(3);
 
-            sut.Projects.Should().NotBeNullOrEmpty();
-            sut.Projects.Should().BeEquivalentTo(_projects);
+            sut.Reports.Should().NotBeNullOrEmpty();
+            sut.Reports.Should().BeEquivalentTo(_projects);
         });
 
         [Fact]
@@ -134,6 +135,15 @@ namespace ReferenceAnalyzer.WPF.Tests
             var canExecute = true;
             _sut.Path = "";
             _sut.Load.CanExecute.Subscribe(x => canExecute = x);
+            canExecute.Should().Be(false);
+        }
+
+        [Fact]
+        public void AnalyzeAllDisabledIfNoSolutionLoaded()
+        {
+            var canExecute = true;
+            _sut.Path = "";
+            _sut.Analyze.CanExecute.Subscribe(x => canExecute = x);
             canExecute.Should().Be(false);
         }
     }

@@ -41,23 +41,29 @@ namespace ReferenceAnalyzer.WPF
                     .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                    viewModel => viewModel.SelectedProject.ActualReferences,
+                    viewModel => viewModel.SelectedProjectReport.ActualReferences,
                     view => view.ActualReferences.ItemsSource)
                     .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                    viewModel => viewModel.SelectedProject.DefinedReferences,
+                    viewModel => viewModel.SelectedProjectReport.DefinedReferences,
                     view => view.DefinedReferences.ItemsSource)
                     .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                    viewModel => viewModel.SelectedProject.DiffReferences,
+                    viewModel => viewModel.SelectedProjectReport.DiffReferences,
                     view => view.DiffReferences.ItemsSource)
                     .DisposeWith(disposableRegistration);
 
                 this.Bind(ViewModel,
                     viewModel => viewModel.StopOnError,
                     view => view.StopOnError.IsChecked)
+                    .DisposeWith(disposableRegistration);
+
+                this.BindCommand(ViewModel,
+                        viewModel => viewModel.Analyze,
+                        view => view.AnalyzeCommand,
+                        viewModel => viewModel.Projects)
                     .DisposeWith(disposableRegistration);
             });
         }

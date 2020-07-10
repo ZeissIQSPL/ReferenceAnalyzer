@@ -23,6 +23,12 @@ namespace ReferenceAnalyzer.WPF.Utilities
         }
 
         public Task<ReferencesReport> Analyze(string target) => throw new System.NotImplementedException();
+        async Task<IEnumerable<string>> IReferenceAnalyzer.Load(string solution) => throw new System.NotImplementedException();
+
+        public IAsyncEnumerable<ReferencesReport> AnalyzeAll() => throw new System.NotImplementedException();
+
+        public IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects) => throw new System.NotImplementedException();
+
         public async Task Load(string solution) => throw new System.NotImplementedException();
     }
 }

@@ -41,7 +41,7 @@ namespace ReferenceAnalyzer.Core
             MSBuildLocator.RegisterInstance(instance);
         }
 
-        public async Task Load(string solution)
+        public async Task<IEnumerable<string>> Load(string solution)
         {
             using var workspace = MSBuildWorkspace.Create(BuildProperties);
 
@@ -60,6 +60,8 @@ namespace ReferenceAnalyzer.Core
             }
 
             _projects = loadedSolution.Projects.ToList();
+
+            return _projects.Select(p => p.Name);
         }
 
         public async Task<ReferencesReport> Analyze(string target)
@@ -108,6 +110,12 @@ namespace ReferenceAnalyzer.Core
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()
         {
             foreach (var project in _projects)
+                yield return await Analyze(project);
+        }
+
+        public async IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects)
+        {
+            foreach (var project in _projects.Where(p => projects.Contains(p.Name)))
                 yield return await Analyze(project);
         }
     }

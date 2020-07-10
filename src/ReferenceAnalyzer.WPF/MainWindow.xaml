@@ -19,6 +19,7 @@
         <DockPanel Grid.Column="0">
             <TextBox Name="Path" DockPanel.Dock="Top" />
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
+            <Button Name="AnalyzeCommand" DockPanel.Dock="Top">Analyze</Button>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
                 <CheckBox Margin="5,5,0,0" Name="StopOnError"></CheckBox>
                 <Label Content="Stop on error"></Label>
