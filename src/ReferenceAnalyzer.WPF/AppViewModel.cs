@@ -16,8 +16,8 @@ namespace ReferenceAnalyzer.WPF
 {
     public class AppViewModel : ReactiveObject
     {
-        private readonly ReadOnlyObservableCollection<ReferencesReport> _reports;
-        private readonly ReadOnlyObservableCollection<string> _projects;
+        private ReadOnlyObservableCollection<ReferencesReport> _reports;
+        private ReadOnlyObservableCollection<string> _projects;
         private string _path;
         private bool _stopOnError = true;
         private string _selectedProject;
@@ -38,32 +38,13 @@ namespace ReferenceAnalyzer.WPF
 
             _path = settings.SolutionPath;
 
-            var canLoad = this.WhenAnyValue(x => x.Path,
-                    path => !string.IsNullOrEmpty(path));
+            SetupCommands(projectProvider);
 
-            Load = ReactiveCommand.CreateFromObservable(() =>
-                Observable.Create<string>(o =>
-                    LoadProjects(projectProvider, o)),
-                canLoad);
+            SetupProperties(settings, projectProvider);
+        }
 
-            Load.ToObservableChangeSet()
-                .Bind(out _projects)
-                .Subscribe();
-
-            Load.ThrownExceptions.Subscribe(error => MessageBox.Show("Error caught: " + error.Message));
-
-            var canAnalyze = Projects.ToObservableChangeSet()
-                .Select(_ => Projects?.Any() == true);
-
-            Analyze = ReactiveCommand.CreateFromObservable<IEnumerable<string>, ReferencesReport>(projects =>
-                    Observable.Create<ReferencesReport>(o =>
-                    LoadReferencesReports(projectProvider, o, projects)),
-                canAnalyze);
-
-            Analyze.ToObservableChangeSet()
-                .Bind(out _reports)
-                .Subscribe();
-
+        private void SetupProperties(ISettings settings, IReferenceAnalyzer projectProvider)
+        {
             this.WhenAnyValue(viewModel => viewModel.Path)
                 .Subscribe(x => settings.SolutionPath = x);
 
@@ -72,8 +53,38 @@ namespace ReferenceAnalyzer.WPF
 
             this.WhenAnyValue(viewModel => viewModel.SelectedProject, viewModel => viewModel.Reports.Count)
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedProjectReport)));
-
         }
+
+        private void SetupCommands(IReferenceAnalyzer projectProvider)
+        {
+            var canLoad = this.WhenAnyValue(x => x.Path,
+                path => !string.IsNullOrEmpty(path));
+
+            Load = ReactiveCommand.CreateFromTask(() =>
+                LoadProjects(projectProvider),
+                canLoad);
+
+            Load.ThrownExceptions
+                .Subscribe(async error => await MessagePopup.Handle(error.Message));
+
+            Load.ToObservableChangeSet()
+                .Bind(out _projects)
+                .Subscribe();
+
+            var canAnalyze = Projects.ToObservableChangeSet()
+                .Select(_ => Projects?.Any() == true);
+
+            Analyze = ReactiveCommand.CreateFromObservable<IEnumerable<string>, ReferencesReport>(projects =>
+                    Observable.Create<ReferencesReport>(o =>
+                        LoadReferencesReports(projectProvider, o, projects)),
+                canAnalyze);
+
+            Analyze.ToObservableChangeSet()
+                .Bind(out _reports)
+                .Subscribe();
+        }
+
+        public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
 
         public string Path
         {
@@ -92,25 +103,25 @@ namespace ReferenceAnalyzer.WPF
         public ReadOnlyObservableCollection<ReferencesReport> Reports => _reports;
         public ReadOnlyObservableCollection<string> Projects => _projects;
 
-        public ReactiveCommand<Unit, string> Load { get; }
+        public ReactiveCommand<Unit, IEnumerable<string>> Load { get; set; }
+
         public bool StopOnError
         {
             get => _stopOnError;
             set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
         }
 
-        public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; }
+        public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; set; }
 
-        private async Task LoadProjects(IReferenceAnalyzer projectProvider, IObserver<string> o)
-        {
-            foreach (var element in await projectProvider.Load(Path))
-                o.OnNext(element);
-        }
+        private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
 
-        private static async Task LoadReferencesReports(IReferenceAnalyzer projectProvider, IObserver<ReferencesReport> o, IEnumerable<string> projects)
+        private static async Task LoadReferencesReports(IReferenceAnalyzer projectProvider,
+            IObserver<ReferencesReport> observer,
+            IEnumerable<string> projects)
         {
             await foreach (var element in projectProvider.Analyze(projects))
-                o.OnNext(element);
+                observer.OnNext(element);
+            observer.OnCompleted();
         }
     }
 }
