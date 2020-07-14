@@ -4,6 +4,13 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="TestFiles\**" />
+    <EmbeddedResource Remove="TestFiles\**" />
+    <None Remove="TestFiles\**" />
+    <SpecFlowFeatureFiles Remove="TestFiles\**" />
+    <SpecFlowObsoleteCodeBehindFiles Remove="TestFiles\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="fluentassertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

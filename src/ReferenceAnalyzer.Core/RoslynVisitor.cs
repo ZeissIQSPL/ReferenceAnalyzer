@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ReferenceAnalyzer.Core
 {
-    internal class RoslynVisitor : SymbolVisitor
+    public class RoslynVisitor : SymbolVisitor
     {
         private readonly Compilation _compilation;
         private readonly IDictionary<ITypeSymbol, SyntaxTree> _syntaxTrees;
