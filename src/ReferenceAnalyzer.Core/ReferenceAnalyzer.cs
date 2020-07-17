@@ -24,6 +24,7 @@ namespace ReferenceAnalyzer.Core
 
         public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
         public bool ThrowOnCompilationFailures { get; set; } = true;
+        public IProgress<double> ProgressReporter { get; set; } = new Progress<double>();
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
         {
@@ -43,6 +44,7 @@ namespace ReferenceAnalyzer.Core
 
         public async Task<IEnumerable<string>> Load(string solution)
         {
+            ProgressReporter.Report(-1);
             using var workspace = MSBuildWorkspace.Create(BuildProperties);
             workspace.SkipUnrecognizedProjects = true;
 
@@ -60,7 +62,11 @@ namespace ReferenceAnalyzer.Core
                 throw new Exception("Failed opening solution: \n" + string.Concat(errors));
             }
 
-            _projects = loadedSolution.Projects.ToList();
+            _projects = loadedSolution.Projects
+                .OrderBy(p => p.Name)
+                .ToList();
+
+            ProgressReporter.Report(1);
 
             return _projects.Select(p => p.Name);
         }
@@ -113,14 +119,20 @@ namespace ReferenceAnalyzer.Core
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()
         {
-            foreach (var project in _projects)
-                yield return await Analyze(project);
+            await foreach (var report in Analyze(_projects.Select(p => p.Name)))
+                yield return report;
         }
 
         public async IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects)
         {
-            foreach (var project in _projects.Where(p => projects.Contains(p.Name)))
-                yield return await Analyze(project);
+            var analyzedProjects = 0;
+            var totalProjects = projects.Count();
+            foreach (var project in projects)
+            {
+                var report = await Analyze(project);
+                ProgressReporter.Report((double)++analyzedProjects / totalProjects);
+                yield return report;
+            }
         }
     }
 }

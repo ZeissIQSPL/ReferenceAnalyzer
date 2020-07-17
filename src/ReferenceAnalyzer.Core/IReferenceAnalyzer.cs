@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,6 +8,7 @@ namespace ReferenceAnalyzer.Core
     {
         IDictionary<string, string> BuildProperties { get; set; }
         bool ThrowOnCompilationFailures { get; set; }
+        IProgress<double> ProgressReporter { get; set; }
         IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath);
         Task<ReferencesReport> Analyze(string target);
         Task<IEnumerable<string>> Load(string solution);
