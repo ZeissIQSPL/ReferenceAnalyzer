@@ -17,6 +17,7 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="MessageBox.Avalonia" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReferenceAnalyzer.Core\ReferenceAnalyzer.Core.csproj" />
