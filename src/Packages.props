@@ -9,6 +9,7 @@
     <PackageReference Update="Avalonia.ReactiveUI" Version="0.9.9" />
     <PackageReference Update="coverlet.collector" Version="1.3.0" />
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
+    <PackageReference Update="MessageBox.Avalonia" Version="0.9.6.1" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Update="Moq" Version="4.14.5" />
     <PackageReference Update="ReactiveUI.Testing" Version="11.4.1" />
