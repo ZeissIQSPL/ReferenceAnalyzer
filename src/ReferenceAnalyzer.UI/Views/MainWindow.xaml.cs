@@ -33,6 +33,8 @@ namespace ReferenceAnalyzer.UI.Views
                         view => view.StopOnError.IsChecked)
                     .DisposeWith(disposableRegistration);
 
+                BindProgress(disposableRegistration);
+
                 ViewModel.MessagePopup
                     .RegisterHandler(interaction =>
                     {
@@ -46,6 +48,20 @@ namespace ReferenceAnalyzer.UI.Views
             });
         }
 
+        private void BindProgress(CompositeDisposable disposableRegistration)
+        {
+            this.OneWayBind(ViewModel,
+                    viewModel => viewModel.Progress,
+                    view => view.Progress.Value)
+                .DisposeWith(disposableRegistration);
+
+            this.OneWayBind(ViewModel,
+                    viewModel => viewModel.Progress,
+                    view => view.Progress.IsIndeterminate,
+                    p => p == -1)
+                .DisposeWith(disposableRegistration);
+        }
+
         public TextBox Path => this.FindControl<TextBox>(nameof(Path));
         public CheckBox StopOnError => this.FindControl<CheckBox>(nameof(StopOnError));
         public ListBox Projects => this.FindControl<ListBox>(nameof(Projects));
@@ -55,6 +71,7 @@ namespace ReferenceAnalyzer.UI.Views
         public Button LoadCommand => this.FindControl<Button>(nameof(LoadCommand));
         public Button AnalyzeAllCommand => this.FindControl<Button>(nameof(AnalyzeAllCommand));
         public Button AnalyzeSelectedCommand => this.FindControl<Button>(nameof(AnalyzeSelectedCommand));
+        public ProgressBar Progress => this.FindControl<ProgressBar>(nameof(Progress));
 
 
         private void BindLists(CompositeDisposable disposableRegistration)

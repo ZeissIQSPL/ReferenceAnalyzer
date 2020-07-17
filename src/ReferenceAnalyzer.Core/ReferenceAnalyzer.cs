@@ -127,6 +127,7 @@ namespace ReferenceAnalyzer.Core
         {
             var analyzedProjects = 0;
             var totalProjects = projects.Count();
+            ProgressReporter.Report(0);
             foreach (var project in projects)
             {
                 var report = await Analyze(project);

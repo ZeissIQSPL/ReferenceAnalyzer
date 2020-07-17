@@ -20,6 +20,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private string _path;
         private bool _stopOnError = true;
         private string _selectedProject;
+        private double _progress;
 
         public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
         {
@@ -36,6 +37,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
             };
 
             _path = settings.SolutionPath;
+
+            projectProvider.ProgressReporter = new Progress<double>(p => Progress = p);
 
             SetupCommands(projectProvider);
 
@@ -119,6 +122,12 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
 
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
+
+        public double Progress
+        {
+            get => _progress;
+            set => this.RaiseAndSetIfChanged(ref _progress, value);
+        }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
 
