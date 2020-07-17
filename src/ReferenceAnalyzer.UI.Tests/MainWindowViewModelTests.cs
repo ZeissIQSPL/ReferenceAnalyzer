@@ -239,5 +239,42 @@ namespace ReferenceAnalyzer.UI.Tests
 
             canExecute.Should().Be(true);
         }
+
+        [Fact]
+        public void ProjectsListIsClearedBetweenLoads()
+        {
+            _sut.Path = "any";
+            _sut.Load.Execute().Subscribe();
+            _scheduler.AdvanceBy(3);
+
+            _sut.Projects.Should().NotBeEmpty();
+
+            var firstCount = _sut.Projects.Count;
+            _sut.Load.Execute().Subscribe();
+            _scheduler.AdvanceBy(3);
+
+            _sut.Projects.Count.Should().Be(firstCount);
+        }
+
+        [Fact]
+        public void ReportsAreClearedBetweenLoads()
+        {
+            _sut.Path = "any";
+            _sut.Load.Execute().Subscribe();
+            _scheduler.AdvanceBy(3);
+
+            _sut.Analyze.Execute().Subscribe();
+            _scheduler.AdvanceBy(3);
+
+            _sut.Reports.Should().NotBeEmpty();
+
+            var firstCount = _sut.Projects.Count;
+            _sut.Analyze.Execute().Subscribe();
+            _scheduler.AdvanceBy(1);
+            _scheduler.AdvanceBy(1);
+            _scheduler.AdvanceBy(1);
+
+            _sut.Reports.Count.Should().Be(firstCount);
+        }
     }
 }

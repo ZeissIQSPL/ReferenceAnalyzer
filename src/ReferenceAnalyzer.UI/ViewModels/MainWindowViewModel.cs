@@ -70,6 +70,15 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe(async error => await MessagePopup.Handle(error.Message));
 
             Load.ToObservableChangeSet()
+                .Merge(Load.IsExecuting
+                    .Where(e => e)
+                    .Select(_ =>
+                        new ChangeSet<string>
+                        {
+                            new Change<string>(
+                                ListChangeReason.Clear,
+                                Projects)
+                        }))
                 .Bind(out _projects)
                 .Subscribe();
 
@@ -82,6 +91,15 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 canAnalyze);
 
             Analyze.ToObservableChangeSet()
+                .Merge(Analyze.IsExecuting
+                    .Where(e => e)
+                    .Select(_ =>
+                        new ChangeSet<ReferencesReport>
+                        {
+                            new Change<ReferencesReport>(
+                                ListChangeReason.Clear,
+                                Reports)
+                        }))
                 .Bind(out _reports)
                 .Subscribe();
 
