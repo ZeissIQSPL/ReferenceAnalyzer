@@ -5,13 +5,14 @@ using System.Linq;
 using System.Reflection;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
 namespace ReferenceAnalyzer.Core.Tests
 {
     public class RoslynVisitorTests
     {
-        private RoslynVisitor _sut;
+        private ReferencesWalker _sut;
         private CSharpCompilation _compilation;
 
         public static IEnumerable<object[]> TestFiles => Directory.GetFiles(GetTestFilesLocation()).Select(s => new [] {Path.GetFileName(s)});
@@ -24,12 +25,12 @@ namespace ReferenceAnalyzer.Core.Tests
 
             var tree = CSharpSyntaxTree.ParseText(text);
             _compilation = CSharpCompilation.Create("TestCompilation", new[] { tree });
-            _sut =  new RoslynVisitor(_compilation);
+            _sut =  new ReferencesWalker(_compilation);
         }
 
         private static string GetTestFilesLocation()
         {
-            var path =  Path.Combine(Assembly.GetExecutingAssembly().CodeBase.Split("src")[0],
+            var path =  Path.Combine(Assembly.GetExecutingAssembly().CodeBase.Split(new [] {"src"}, StringSplitOptions.RemoveEmptyEntries)[0],
                 "src",
                 "ReferenceAnalyzer.Core.Tests",
                 "TestFiles");
@@ -43,9 +44,21 @@ namespace ReferenceAnalyzer.Core.Tests
         {
             LoadFile(fileName);
 
-            _sut.VisitNamespace(_compilation.Assembly.GlobalNamespace);
+            foreach (var tree in _compilation.SyntaxTrees)
+            {
+                var testClass = tree
+                    .GetRoot()
+                    .DescendantNodes()
+                    .OfType<ClassDeclarationSyntax>()
+                    .First(n => n.Identifier.Text == "Test");
 
-            _sut.Occurrences.Should().ContainSingle(o => o.UsedType.Name == "Expected");
+                testClass.Accept(_sut);
+
+                //_sut.Visit(tree.GetRoot());
+            }
+
+            _sut.Occurrences.Should().Contain(o => o.UsedType.Name == "Expected");
+            _sut.Occurrences.Should().NotContain(o => o.UsedType.Name == "Unexpected");
         }
     }
 }

@@ -20,6 +20,7 @@
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.6.0" />
     <PackageReference Update="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.6.0" />
     <PackageReference Update="NuGet.ProjectModel" Version="5.6.0" />
+    <PackageReference Update="NuGet.Frameworks" Version="5.6.0" />
     <PackageReference Update="ReactiveUI.Events.WPF" Version="11.4.1" />
     <PackageReference Update="ReactiveUI.WPF" Version="11.4.1" />
     <PackageReference Update="ReactiveUI" Version="11.4.1" />

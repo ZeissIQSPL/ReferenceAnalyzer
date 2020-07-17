@@ -12,7 +12,7 @@ namespace ReferenceAnalyzer.Core
     public class ReferenceAnalyzer : IReferenceAnalyzer
     {
         private readonly IMessageSink _messageSink;
-        private List<Project> _projects;
+        private List<Project> _projects = new List<Project>();
 
         public ReferenceAnalyzer(IMessageSink messageSink)
         {
@@ -44,6 +44,7 @@ namespace ReferenceAnalyzer.Core
         public async Task<IEnumerable<string>> Load(string solution)
         {
             using var workspace = MSBuildWorkspace.Create(BuildProperties);
+            workspace.SkipUnrecognizedProjects = true;
 
             var loadedSolution = await workspace.OpenSolutionAsync(solution);
 
@@ -74,6 +75,8 @@ namespace ReferenceAnalyzer.Core
         private async Task<ReferencesReport> Analyze(Project project)
         {
             var compilation = await project.GetCompilationAsync();
+            if (compilation == null)
+                throw new ArgumentNullException(nameof(compilation));
 
             await using var dummy = new MemoryStream();
             var compilationResult = compilation.Emit(dummy);
@@ -90,9 +93,10 @@ namespace ReferenceAnalyzer.Core
                 throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
             }
 
-            var visitor = new RoslynVisitor(compilation);
+            var visitor = new ReferencesWalker(compilation);
 
-            visitor.VisitNamespace(compilation.Assembly.GlobalNamespace);
+            foreach (var tree in compilation.SyntaxTrees)
+                visitor.Visit(await tree.GetRootAsync());
 
             var actualReferences = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
