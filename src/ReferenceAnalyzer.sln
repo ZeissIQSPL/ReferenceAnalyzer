@@ -1,17 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30310.162
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceAnalyzer.Core", "ReferenceAnalyzer.Core\ReferenceAnalyzer.Core.csproj", "{98E06EFA-3055-4447-AE49-A69057198E5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReferenceAnalyzer.Core", "ReferenceAnalyzer.Core\ReferenceAnalyzer.Core.csproj", "{98E06EFA-3055-4447-AE49-A69057198E5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceAnalyzer.Core.Tests", "ReferenceAnalyzer.Core.Tests\ReferenceAnalyzer.Core.Tests.csproj", "{E636F2C7-76A0-49B8-9CA1-BFCDEC107BFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReferenceAnalyzer.Core.Tests", "ReferenceAnalyzer.Core.Tests\ReferenceAnalyzer.Core.Tests.csproj", "{E636F2C7-76A0-49B8-9CA1-BFCDEC107BFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceAnalyzer.WPF", "ReferenceAnalyzer.WPF\ReferenceAnalyzer.WPF.csproj", "{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReferenceAnalyzer.UI.Tests", "ReferenceAnalyzer.UI.Tests\ReferenceAnalyzer.UI.Tests.csproj", "{0748FC8A-03CD-45B4-9BE9-1F5EB1BCE3E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceAnalyzer.WPF.Tests", "ReferenceAnalyzer.WPF.Tests\ReferenceAnalyzer.WPF.Tests.csproj", "{0748FC8A-03CD-45B4-9BE9-1F5EB1BCE3E6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceAnalyzer.Avalonia", "ReferenceAnalyzer.Avalonia\ReferenceAnalyzer.Avalonia.csproj", "{FBD913CC-5D35-4E2E-B3AA-55EA5B856135}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReferenceAnalyzer.UI", "ReferenceAnalyzer.UI\ReferenceAnalyzer.UI.csproj", "{FBD913CC-5D35-4E2E-B3AA-55EA5B856135}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{98E06EFA-3055-4447-AE49-A69057198E5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -50,18 +45,6 @@ Global
 		{E636F2C7-76A0-49B8-9CA1-BFCDEC107BFC}.Release|x64.Build.0 = Release|Any CPU
 		{E636F2C7-76A0-49B8-9CA1-BFCDEC107BFC}.Release|x86.ActiveCfg = Release|Any CPU
 		{E636F2C7-76A0-49B8-9CA1-BFCDEC107BFC}.Release|x86.Build.0 = Release|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Debug|x64.Build.0 = Debug|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Debug|x86.Build.0 = Debug|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Release|x64.ActiveCfg = Release|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Release|x64.Build.0 = Release|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Release|x86.ActiveCfg = Release|Any CPU
-		{B8F77C53-D98C-4B5E-80DF-39B5D93E048E}.Release|x86.Build.0 = Release|Any CPU
 		{0748FC8A-03CD-45B4-9BE9-1F5EB1BCE3E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0748FC8A-03CD-45B4-9BE9-1F5EB1BCE3E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0748FC8A-03CD-45B4-9BE9-1F5EB1BCE3E6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -86,5 +69,11 @@ Global
 		{FBD913CC-5D35-4E2E-B3AA-55EA5B856135}.Release|x64.Build.0 = Release|Any CPU
 		{FBD913CC-5D35-4E2E-B3AA-55EA5B856135}.Release|x86.ActiveCfg = Release|Any CPU
 		{FBD913CC-5D35-4E2E-B3AA-55EA5B856135}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CDBCA043-4D52-422D-87AD-03C417497A07}
 	EndGlobalSection
 EndGlobal

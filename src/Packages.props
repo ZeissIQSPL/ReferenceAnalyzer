@@ -4,6 +4,9 @@
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" PrivateAssets="All" />
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <GlobalPackageReference Include="JetBrains.Annotations" Version="2020.1.0" PrivateAssets="All" />
+    <PackageReference Update="Avalonia" Version="0.9.9" />
+    <PackageReference Update="Avalonia.Desktop" Version="0.9.9" />
+    <PackageReference Update="Avalonia.ReactiveUI" Version="0.9.9" />
     <PackageReference Update="coverlet.collector" Version="1.3.0" />
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.5.0" />

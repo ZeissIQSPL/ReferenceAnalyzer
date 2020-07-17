@@ -1,30 +1,30 @@
 using System.Reactive;
 using System.Reactive.Disposables;
-using System.Windows;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
 using ReactiveUI;
-using ReferenceAnalyzer.Core;
-using ReferenceAnalyzer.WPF.Utilities;
+using ReferenceAnalyzer.UI.ViewModels;
 
-namespace ReferenceAnalyzer.WPF
+namespace ReferenceAnalyzer.UI.Views
 {
-    /// <summary>
-    ///     Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : ReactiveWindow<AppViewModel>
+    public class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         public MainWindow()
         {
             InitializeComponent();
-            ViewModel = new AppViewModel(
-                new Settings(),
-                new Core.ReferenceAnalyzer(
-                    new MessageSink()));
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+
 
             this.WhenActivated(disposableRegistration =>
             {
                 this.Bind(ViewModel,
-                    viewModel => viewModel.Path,
-                    view => view.Path.Text)
+                        viewModel => viewModel.Path,
+                        view => view.Path.Text)
                     .DisposeWith(disposableRegistration);
 
                 this.Bind(ViewModel,
@@ -35,7 +35,7 @@ namespace ReferenceAnalyzer.WPF
                 ViewModel.MessagePopup
                     .RegisterHandler(interaction =>
                     {
-                        MessageBox.Show(interaction.Input);
+                        //MessageBox.Show(interaction.Input);
                         interaction.SetOutput(Unit.Default);
                     });
 
@@ -43,6 +43,16 @@ namespace ReferenceAnalyzer.WPF
                 BindLists(disposableRegistration);
             });
         }
+
+        public TextBox Path => this.FindControl<TextBox>(nameof(Path));
+        public CheckBox StopOnError => this.FindControl<CheckBox>(nameof(StopOnError));
+        public ListBox Projects => this.FindControl<ListBox>(nameof(Projects));
+        public ListBox ActualReferences => this.FindControl<ListBox>(nameof(ActualReferences));
+        public ListBox DefinedReferences => this.FindControl<ListBox>(nameof(DefinedReferences));
+        public ListBox DiffReferences => this.FindControl<ListBox>(nameof(DiffReferences));
+        public Button LoadCommand => this.FindControl<Button>(nameof(LoadCommand));
+        public Button AnalyzeCommand => this.FindControl<Button>(nameof(AnalyzeCommand));
+
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {
@@ -52,22 +62,22 @@ namespace ReferenceAnalyzer.WPF
 
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.Projects,
-                    view => view.Projects.ItemsSource)
+                    view => view.Projects.Items)
                 .DisposeWith(disposableRegistration);
 
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.SelectedProjectReport.ActualReferences,
-                    view => view.ActualReferences.ItemsSource)
+                    view => view.ActualReferences.Items)
                 .DisposeWith(disposableRegistration);
 
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.SelectedProjectReport.DefinedReferences,
-                    view => view.DefinedReferences.ItemsSource)
+                    view => view.DefinedReferences.Items)
                 .DisposeWith(disposableRegistration);
 
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.SelectedProjectReport.DiffReferences,
-                    view => view.DiffReferences.ItemsSource)
+                    view => view.DiffReferences.Items)
                 .DisposeWith(disposableRegistration);
         }
 

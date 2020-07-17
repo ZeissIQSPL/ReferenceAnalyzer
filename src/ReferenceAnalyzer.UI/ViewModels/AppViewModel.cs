@@ -9,11 +9,11 @@ using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
-using ReferenceAnalyzer.Avalonia.Models;
+using ReferenceAnalyzer.UI.Models;
 
-namespace ReferenceAnalyzer.Avalonia.ViewModels
+namespace ReferenceAnalyzer.UI
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class AppViewModel : ReactiveObject
     {
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
@@ -21,7 +21,7 @@ namespace ReferenceAnalyzer.Avalonia.ViewModels
         private bool _stopOnError = true;
         private string _selectedProject;
 
-        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
+        public AppViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));

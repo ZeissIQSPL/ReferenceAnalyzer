@@ -1,12 +1,12 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using ReferenceAnalyzer.Avalonia.Models;
-using ReferenceAnalyzer.Avalonia.ViewModels;
-using ReferenceAnalyzer.Avalonia.Views;
 using ReferenceAnalyzer.Core;
+using ReferenceAnalyzer.UI.Models;
+using ReferenceAnalyzer.UI.ViewModels;
+using ReferenceAnalyzer.UI.Views;
 
-namespace ReferenceAnalyzer.Avalonia
+namespace ReferenceAnalyzer.UI
 {
     public class App : Application
     {
