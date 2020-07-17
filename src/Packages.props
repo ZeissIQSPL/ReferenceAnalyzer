@@ -28,5 +28,6 @@
     <PackageReference Update="ReactiveUI.Events.WPF" Version="11.4.1" />
     <PackageReference Update="ReactiveUI.WPF" Version="11.4.1" />
     <PackageReference Update="ReactiveUI" Version="11.4.1" />
+    <PackageReference Update="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 </Project>
