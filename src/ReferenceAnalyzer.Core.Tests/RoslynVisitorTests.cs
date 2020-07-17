@@ -53,8 +53,6 @@ namespace ReferenceAnalyzer.Core.Tests
                     .First(n => n.Identifier.Text == "Test");
 
                 testClass.Accept(_sut);
-
-                //_sut.Visit(tree.GetRoot());
             }
 
             _sut.Occurrences.Should().Contain(o => o.UsedType.Name == "Expected");

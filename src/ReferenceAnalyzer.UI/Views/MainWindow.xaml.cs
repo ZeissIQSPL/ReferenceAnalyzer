@@ -53,7 +53,8 @@ namespace ReferenceAnalyzer.UI.Views
         public ListBox DefinedReferences => this.FindControl<ListBox>(nameof(DefinedReferences));
         public ListBox DiffReferences => this.FindControl<ListBox>(nameof(DiffReferences));
         public Button LoadCommand => this.FindControl<Button>(nameof(LoadCommand));
-        public Button AnalyzeCommand => this.FindControl<Button>(nameof(AnalyzeCommand));
+        public Button AnalyzeAllCommand => this.FindControl<Button>(nameof(AnalyzeAllCommand));
+        public Button AnalyzeSelectedCommand => this.FindControl<Button>(nameof(AnalyzeSelectedCommand));
 
 
         private void BindLists(CompositeDisposable disposableRegistration)
@@ -92,8 +93,14 @@ namespace ReferenceAnalyzer.UI.Views
 
             this.BindCommand(ViewModel,
                     viewModel => viewModel.Analyze,
-                    view => view.AnalyzeCommand,
+                    view => view.AnalyzeAllCommand,
                     viewModel => viewModel.Projects)
+                .DisposeWith(disposableRegistration);
+
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.AnalyzeSelected,
+                    view => view.AnalyzeSelectedCommand,
+                    viewModel => viewModel.SelectedProject)
                 .DisposeWith(disposableRegistration);
         }
     }

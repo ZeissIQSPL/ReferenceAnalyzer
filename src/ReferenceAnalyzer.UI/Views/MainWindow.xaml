@@ -36,7 +36,8 @@
         <DockPanel Grid.Column="0">
             <TextBox Name="Path" DockPanel.Dock="Top" />
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
-            <Button Name="AnalyzeCommand" DockPanel.Dock="Top">Analyze</Button>
+            <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
+            <Button Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
                 <CheckBox Margin="5,5,0,0" Name="StopOnError"></CheckBox>
                 <TextBlock Text="Stop on error"></TextBlock>

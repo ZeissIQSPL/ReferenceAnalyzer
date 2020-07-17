@@ -60,7 +60,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 path => !string.IsNullOrEmpty(path));
 
             Load = ReactiveCommand.CreateFromTask(() =>
-                LoadProjects(projectProvider),
+                    LoadProjects(projectProvider),
                 canLoad);
 
             Load.ThrownExceptions
@@ -81,7 +81,15 @@ namespace ReferenceAnalyzer.UI.ViewModels
             Analyze.ToObservableChangeSet()
                 .Bind(out _reports)
                 .Subscribe();
+
+            var canAnalyzeSelected = this.WhenAnyValue(vm => vm.SelectedProject)
+                .Select(p => !string.IsNullOrEmpty(p));
+
+            AnalyzeSelected = ReactiveCommand.CreateFromObservable<string, ReferencesReport>(p =>
+                Analyze.Execute(new[] {p}), canAnalyzeSelected);
         }
+
+        public ReactiveCommand<string, ReferencesReport> AnalyzeSelected { get; set; }
 
         public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
 
@@ -102,7 +110,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public ReadOnlyObservableCollection<ReferencesReport> Reports => _reports;
         public ReadOnlyObservableCollection<string> Projects => _projects;
 
-        public ReactiveCommand<Unit, IEnumerable<string>> Load { get; set; }
+        public ReactiveCommand<Unit, IEnumerable<string>> Load { get; private set; }
 
         public bool StopOnError
         {
@@ -110,7 +118,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
         }
 
-        public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; set; }
+        public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
 

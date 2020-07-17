@@ -58,7 +58,7 @@ namespace ReferenceAnalyzer.UI.Tests
                 .Returns(Task.FromResult(new[] {"proj1", "proj2"}.AsEnumerable()));
 
             var firstReport = new ReferencesReport("proj1", new[] {"ref1", "ref2"}, referencedProjects);
-            var secondReport = new ReferencesReport("proj2", new[] {"ref2", "ref3"}, null);
+            var secondReport = new ReferencesReport("proj2", new[] {"ref2", "ref3"}, Enumerable.Empty<ActualReference>());
 
             _reports = new[] {firstReport, secondReport};
 
@@ -208,6 +208,34 @@ namespace ReferenceAnalyzer.UI.Tests
 
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
+
+            canExecute.Should().Be(true);
+        }
+
+        [Fact]
+        public void AnalyzeSelectedNotEnabledIfNoProjectSelected()
+        {
+            var canExecute = false;
+            _sut.Path = "any";
+            _sut.AnalyzeSelected.CanExecute.Subscribe(x => canExecute = x);
+
+            _sut.Load.Execute().Subscribe();
+            _scheduler.AdvanceBy(3);
+
+            canExecute.Should().Be(false);
+        }
+
+        [Fact]
+        public void AnalyzeSelectedEnabledIfAnyProjectSelected()
+        {
+            var canExecute = false;
+            _sut.Path = "any";
+            _sut.AnalyzeSelected.CanExecute.Subscribe(x => canExecute = x);
+
+            _sut.Load.Execute().Subscribe();
+            _scheduler.AdvanceBy(3);
+
+            _sut.SelectedProject = _sut.Projects.First();
 
             canExecute.Should().Be(true);
         }
