@@ -13,11 +13,12 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.9" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.9" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.9" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.ReactiveUI" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReferenceAnalyzer.Core\ReferenceAnalyzer.Core.csproj" />
   </ItemGroup>
+  <Import Project="$(SolutionDir)ReferenceAnalyzer.Common.targets" />
 </Project>

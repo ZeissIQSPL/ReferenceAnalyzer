@@ -1,15 +1,14 @@
-<Window  xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
-         xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:ReferenceAnalyzer.Avalonia.ViewModels;assembly=ReferenceAnalyzer.Avalonia"
+        xmlns:vm="clr-namespace:ReferenceAnalyzer.UI.ViewModels;assembly=ReferenceAnalyzer.UI"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-         xmlns:local="clr-namespace:ReferenceAnalyzer.Core;assembly=ReferenceAnalyzer.Core"
-         xmlns:system="clr-namespace:System;assembly=System.Runtime"
-         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="ReferenceAnalyzer.Avalonia.Views.MainWindow"
+        xmlns:local="clr-namespace:ReferenceAnalyzer.Core;assembly=ReferenceAnalyzer.Core"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ReferenceAnalyzer.UI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="ReferenceAnalyzer.Avalonia">
+        Title="ReferenceAnalyzer.UI">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
@@ -27,7 +26,7 @@
 
     </Window.DataTemplates>
 
-    <controls:Grid>
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
@@ -71,6 +70,5 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-    </controls:Grid>
-
+    </Grid>
 </Window>

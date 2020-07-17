@@ -5,16 +5,15 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
-using ReferenceAnalyzer.WPF.Utilities;
+using ReferenceAnalyzer.UI.Models;
 
-namespace ReferenceAnalyzer.WPF
+namespace ReferenceAnalyzer.UI.ViewModels
 {
-    public class AppViewModel : ReactiveObject
+    public class MainWindowViewModel : ViewModelBase
     {
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
@@ -22,7 +21,7 @@ namespace ReferenceAnalyzer.WPF
         private bool _stopOnError = true;
         private string _selectedProject;
 
-        public AppViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
+        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));

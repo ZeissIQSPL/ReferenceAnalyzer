@@ -1,4 +1,4 @@
-namespace ReferenceAnalyzer.Avalonia.Models
+namespace ReferenceAnalyzer.UI.Models
 {
     public class Settings : ISettings
     {

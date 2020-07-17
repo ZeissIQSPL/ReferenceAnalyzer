@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Reactive.Testing;
 using Moq;
 using ReactiveUI.Testing;
+using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.Util;
-using ReferenceAnalyzer.WPF.Utilities;
 using Xunit;
 
-namespace ReferenceAnalyzer.WPF.Tests
+namespace ReferenceAnalyzer.UI.Tests
 {
     public class AppViewModelTests
     {

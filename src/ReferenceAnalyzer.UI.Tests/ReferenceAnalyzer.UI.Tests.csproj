@@ -13,7 +13,7 @@
     <PackageReference Include="xunit" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../ReferenceAnalyzer.WPF/ReferenceAnalyzer.WPF.csproj" />
+    <ProjectReference Include="..\ReferenceAnalyzer.UI\ReferenceAnalyzer.UI.csproj" />
   </ItemGroup>
   <Import Project="$(SolutionDir)ReferenceAnalyzer.Common.targets" />
 </Project>
