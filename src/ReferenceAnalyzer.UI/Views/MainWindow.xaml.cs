@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using MessageBox.Avalonia;
 using ReactiveUI;
 using ReferenceAnalyzer.UI.ViewModels;
 
@@ -35,7 +36,8 @@ namespace ReferenceAnalyzer.UI.Views
                 ViewModel.MessagePopup
                     .RegisterHandler(interaction =>
                     {
-                        //MessageBox.Show(interaction.Input);
+                        var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandardWindow("warning", interaction.Input);
+                        messageBoxStandardWindow.Show();
                         interaction.SetOutput(Unit.Default);
                     });
 

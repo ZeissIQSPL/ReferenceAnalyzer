@@ -10,21 +10,22 @@ using ReactiveUI.Testing;
 using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.Util;
+using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
 
 namespace ReferenceAnalyzer.UI.Tests
 {
-    public class AppViewModelTests
+    public class MainWindowViewModelTests
     {
         private const string Path = "samplePath";
         private Mock<ISettings> _settingsMock;
         private Mock<IReferenceAnalyzer> _analyzerMock;
-        private AppViewModel _sut;
+        private MainWindowViewModel _sut;
         private IEnumerable<ReferencesReport> _reports;
         private TestScheduler _scheduler;
         private string _receivedPopupMessage;
 
-        public AppViewModelTests()
+        public MainWindowViewModelTests()
         {
             SetupAnalyzer();
 
@@ -32,7 +33,7 @@ namespace ReferenceAnalyzer.UI.Tests
 
             new TestScheduler().With(scheduler =>
             {
-                _sut = new AppViewModel(_settingsMock.Object, _analyzerMock.Object);
+                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object);
 
                 _receivedPopupMessage = null;
                 _sut.MessagePopup
@@ -84,7 +85,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void Instantiates()
         {
-            Action a = () => _ = new AppViewModel(_settingsMock.Object, _analyzerMock.Object);
+            Action a = () => _ = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object);
 
             a.Should().NotThrow();
         }
