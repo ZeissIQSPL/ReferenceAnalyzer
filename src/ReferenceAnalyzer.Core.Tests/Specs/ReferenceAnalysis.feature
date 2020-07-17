@@ -12,10 +12,10 @@ Scenario Outline: Counting references
     Examples:
     | solution                   | target   | references |
     | no_references              | Project2 | 0          |
-    | one_used_reference         | Project2 | 1          |
-    | two_references_one_unused  | Project2 | 1          |
+    | one_used_reference         | Project2 | 2          |
+    | two_references_one_unused  | Project2 | 2          |
     | two_references_one_unused  | Project3 | 0          |
-    | multiple_references_to_one | Project2 | 4          |
+    | multiple_references_to_one | Project2 | 5          |
 
 Scenario: Defined references
     Given I have a solution two_references_one_unused
