@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,27 +13,17 @@ namespace ReferenceAnalyzer.Core.Tests
         private ReferencesWalker _sut;
         private CSharpCompilation _compilation;
 
-        public static IEnumerable<object[]> TestFiles => Directory.GetFiles(GetTestFilesLocation()).Select(s => new [] {Path.GetFileName(s)});
+        public static IEnumerable<object[]> TestFiles => Directory.GetFiles(TestsHelper.GetTestFilesLocation()).Select(s => new [] {Path.GetFileName(s)});
 
         private void LoadFile(string name)
         {
-            var path = Path.Combine(GetTestFilesLocation(), name);
+            var path = Path.Combine(TestsHelper.GetTestFilesLocation(), name);
 
             var text = File.ReadAllText(path);
 
             var tree = CSharpSyntaxTree.ParseText(text);
             _compilation = CSharpCompilation.Create("TestCompilation", new[] { tree });
             _sut =  new ReferencesWalker(_compilation);
-        }
-
-        private static string GetTestFilesLocation()
-        {
-            var path =  Path.Combine(Assembly.GetExecutingAssembly().CodeBase.Split(new [] {"src"}, StringSplitOptions.RemoveEmptyEntries)[0],
-                "src",
-                "ReferenceAnalyzer.Core.Tests",
-                "TestFiles");
-
-            return new Uri(path).AbsolutePath;
         }
 
         [Theory]
