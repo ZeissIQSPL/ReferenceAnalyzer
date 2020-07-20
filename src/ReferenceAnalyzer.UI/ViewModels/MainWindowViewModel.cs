@@ -69,16 +69,13 @@ namespace ReferenceAnalyzer.UI.ViewModels
             Load.ThrownExceptions
                 .Subscribe(async error => await MessagePopup.Handle(error.Message));
 
-            Load.ToObservableChangeSet()
-                .Merge(Load.IsExecuting
-                    .Where(e => e)
-                    .Select(_ =>
-                        new ChangeSet<string>
-                        {
-                            new Change<string>(
-                                ListChangeReason.Clear,
-                                Projects)
-                        }))
+            var projects = new SourceList<string>();
+            Load.Subscribe(p => projects.AddRange(p));
+            Load.IsExecuting
+                .Where(e => e)
+                .Subscribe(_ => projects.Clear());
+
+            projects.Connect()
                 .Bind(out _projects)
                 .Subscribe();
 
@@ -90,16 +87,13 @@ namespace ReferenceAnalyzer.UI.ViewModels
                         LoadReferencesReports(projectProvider, o, projects)),
                 canAnalyze);
 
-            Analyze.ToObservableChangeSet()
-                .Merge(Analyze.IsExecuting
-                    .Where(e => e)
-                    .Select(_ =>
-                        new ChangeSet<ReferencesReport>
-                        {
-                            new Change<ReferencesReport>(
-                                ListChangeReason.Clear,
-                                Reports)
-                        }))
+            var reports = new SourceList<ReferencesReport>();
+            Analyze.Subscribe(r => reports.Add(r));
+            Analyze.IsExecuting
+                .Where(e => e)
+                .Subscribe(_ => reports.Clear());
+
+            reports.Connect()
                 .Bind(out _reports)
                 .Subscribe();
 

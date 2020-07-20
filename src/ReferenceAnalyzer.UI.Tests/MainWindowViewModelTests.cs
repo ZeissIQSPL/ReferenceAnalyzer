@@ -270,9 +270,7 @@ namespace ReferenceAnalyzer.UI.Tests
 
             var firstCount = _sut.Projects.Count;
             _sut.Analyze.Execute().Subscribe();
-            _scheduler.AdvanceBy(1);
-            _scheduler.AdvanceBy(1);
-            _scheduler.AdvanceBy(1);
+            _scheduler.AdvanceBy(4);
 
             _sut.Reports.Count.Should().Be(firstCount);
         }
