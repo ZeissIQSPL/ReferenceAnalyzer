@@ -274,5 +274,18 @@ namespace ReferenceAnalyzer.UI.Tests
 
             _sut.Reports.Count.Should().Be(firstCount);
         }
+
+        [Fact]
+        public void SelectingNotAnalyzedProjectEmptyReportReturned()
+        {
+            _sut.Path = "any";
+            _sut.Load.Execute().Subscribe();
+            _scheduler.AdvanceBy(3);
+
+            _sut.SelectedProject = _sut.Projects.First();
+
+            _sut.SelectedProjectReport.DefinedReferences.Should().BeEmpty();
+            _sut.SelectedProjectReport.ActualReferences.Should().BeEmpty();
+        }
     }
 }

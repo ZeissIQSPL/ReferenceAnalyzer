@@ -124,7 +124,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _path, value);
         }
 
-        public ReferencesReport SelectedProjectReport => Reports.FirstOrDefault(r => r.Project == SelectedProject);
+        public ReferencesReport SelectedProjectReport =>
+            Reports.FirstOrDefault(r => r.Project == SelectedProject) ?? ReferencesReport.Empty(SelectedProject);
 
         public string SelectedProject
         {
