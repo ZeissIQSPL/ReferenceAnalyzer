@@ -59,6 +59,13 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         private void SetupCommands(IReferenceAnalyzer projectProvider)
         {
+            SetupLoad(projectProvider);
+
+            SetupAnalyze(projectProvider);
+        }
+
+        private void SetupLoad(IReferenceAnalyzer projectProvider)
+        {
             var canLoad = this.WhenAnyValue(x => x.Path,
                 path => !string.IsNullOrEmpty(path));
 
@@ -78,7 +85,10 @@ namespace ReferenceAnalyzer.UI.ViewModels
             projects.Connect()
                 .Bind(out _projects)
                 .Subscribe();
+        }
 
+        private void SetupAnalyze(IReferenceAnalyzer projectProvider)
+        {
             var canAnalyze = Projects.ToObservableChangeSet()
                 .Select(_ => Projects?.Any() == true);
 
