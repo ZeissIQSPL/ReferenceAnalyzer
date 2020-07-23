@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using ReferenceAnalyzer.Core;
+using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.UI.ViewModels;
 using ReferenceAnalyzer.UI.Views;
@@ -24,7 +25,7 @@ namespace ReferenceAnalyzer.UI
                     DataContext = new MainWindowViewModel(
                         new Settings(),
                         new Core.ReferenceAnalyzer(
-                            new MessageSink())),
+                            new MessageSink(), new ProjectAccess())),
                 };
             }
 

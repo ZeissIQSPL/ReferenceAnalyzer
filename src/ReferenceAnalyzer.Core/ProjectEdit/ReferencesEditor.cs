@@ -11,12 +11,12 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
         private readonly IProjectAccess _projectAccess;
         private readonly Lazy<XDocument> _content;
 
-        public ReferencesEditor(IProjectAccess projectAccess, string project)
+        public ReferencesEditor(IProjectAccess projectAccess, string projectPath)
         {
             _projectAccess = projectAccess;
             _content = new Lazy<XDocument>(() =>
             {
-                var text = _projectAccess.Read(project);
+                var text = _projectAccess.Read(projectPath);
                 return XDocument.Parse(text);
             });
         }

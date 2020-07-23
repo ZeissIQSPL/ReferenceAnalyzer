@@ -6,17 +6,20 @@ using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
+using ReferenceAnalyzer.Core.ProjectEdit;
 
 namespace ReferenceAnalyzer.Core
 {
     public class ReferenceAnalyzer : IReferenceAnalyzer
     {
         private readonly IMessageSink _messageSink;
+        private readonly IProjectAccess _projectAccess;
         private List<Project> _projects = new List<Project>();
 
-        public ReferenceAnalyzer(IMessageSink messageSink)
+        public ReferenceAnalyzer(IMessageSink messageSink, IProjectAccess projectAccess)
         {
             _messageSink = messageSink;
+            _projectAccess = projectAccess;
 
             InitializeMsBuild();
         }
@@ -81,8 +84,13 @@ namespace ReferenceAnalyzer.Core
         private async Task<ReferencesReport> Analyze(Project project)
         {
             var compilation = await project.GetCompilationAsync();
-            if (compilation == null)
-                throw new ArgumentNullException(nameof(compilation));
+
+            var outputPath = Path.GetFullPath(Path.Combine(project.OutputFilePath!, ".."));
+
+            var assemblies = Directory.GetFiles(outputPath, "*.dll")
+                .Select(f => MetadataReference.CreateFromFile(f));
+
+            compilation = compilation!.AddReferences(assemblies);
 
             await using var dummy = new MemoryStream();
             var compilationResult = compilation.Emit(dummy);
@@ -107,11 +115,16 @@ namespace ReferenceAnalyzer.Core
             var actualReferences = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
                 .Where(g => g.Key != null)
+                .Where(g => _projects
+                    .Where(p => p != project)
+                    .Select(p => p.AssemblyName)
+                    .Contains(g.Key.Name))
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .OrderBy(r => r.Target);
 
-            var definedReferences = compilation.ReferencedAssemblyNames
-                .Select(reference => reference.Name)
+            var editor = new ReferencesEditor(_projectAccess, project.FilePath);
+
+            var definedReferences = editor.GetReferencedProjects()
                 .OrderBy(n => n);
 
             return new ReferencesReport(project.Name, definedReferences, actualReferences);

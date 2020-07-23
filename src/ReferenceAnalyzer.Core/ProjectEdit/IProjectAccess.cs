@@ -1,8 +1,8 @@
-﻿namespace ReferenceAnalyzer.Core.ProjectEdit
+namespace ReferenceAnalyzer.Core.ProjectEdit
 {
     public interface IProjectAccess
     {
         string Read(string path);
-        void Write(string path);
+        void Write(string path, string content);
     }
 }
