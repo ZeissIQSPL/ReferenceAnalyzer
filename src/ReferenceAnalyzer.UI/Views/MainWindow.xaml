@@ -5,26 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ReferenceAnalyzer.Core;assembly=ReferenceAnalyzer.Core"
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" Width="800" Height="450"
         x:Class="ReferenceAnalyzer.UI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="ReferenceAnalyzer.UI">
-
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
-
-    <Window.DataTemplates>
-
-        <DataTemplate DataType="{x:Type local:ActualReference}">
-            <TextBlock Text="{Binding Target}"/>
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type system:String}">
-            <TextBlock Text="{Binding .}"/>
-        </DataTemplate>
-
-    </Window.DataTemplates>
 
     <Grid>
         <Grid.ColumnDefinitions>
