@@ -18,9 +18,10 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
         private string _path;
-        private bool _stopOnError = true;
+        private bool _stopOnError = false;
         private string _selectedProject;
         private double _progress;
+        private bool _includeNuGets = false;
 
         public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
         {
@@ -52,6 +53,9 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
             this.WhenAnyValue(viewModel => viewModel.StopOnError)
                 .Subscribe(x => projectProvider.ThrowOnCompilationFailures = x);
+
+            this.WhenAnyValue(viewModel => viewModel.IncludeNuGets)
+                .Subscribe(x => projectProvider.IncludeNuGets = x);
 
             this.WhenAnyValue(viewModel => viewModel.SelectedProject, viewModel => viewModel.Reports.Count)
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedProjectReport)));
@@ -142,6 +146,12 @@ namespace ReferenceAnalyzer.UI.ViewModels
         {
             get => _stopOnError;
             set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
+        }
+
+        public bool IncludeNuGets
+        {
+            get => _includeNuGets;
+            set => this.RaiseAndSetIfChanged(ref _includeNuGets, value);
         }
 
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }

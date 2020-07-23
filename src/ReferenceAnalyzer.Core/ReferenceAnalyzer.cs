@@ -13,13 +13,13 @@ namespace ReferenceAnalyzer.Core
     public class ReferenceAnalyzer : IReferenceAnalyzer
     {
         private readonly IMessageSink _messageSink;
-        private readonly IProjectAccess _projectAccess;
+        private readonly IReferencesEditor _editor;
         private List<Project> _projects = new List<Project>();
 
-        public ReferenceAnalyzer(IMessageSink messageSink, IProjectAccess projectAccess)
+        public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor)
         {
             _messageSink = messageSink;
-            _projectAccess = projectAccess;
+            _editor = editor;
 
             InitializeMsBuild();
         }
@@ -28,6 +28,7 @@ namespace ReferenceAnalyzer.Core
         public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
         public bool ThrowOnCompilationFailures { get; set; } = true;
         public IProgress<double> ProgressReporter { get; set; } = new Progress<double>();
+        public bool IncludeNuGets { get; set; }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
         {
@@ -112,19 +113,25 @@ namespace ReferenceAnalyzer.Core
             foreach (var tree in compilation.SyntaxTrees)
                 visitor.Visit(await tree.GetRootAsync());
 
-            var actualReferences = visitor.Occurrences
+            var groupedAssemblies = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
-                .Where(g => g.Key != null)
-                .Where(g => _projects
-                    .Where(p => p != project)
-                    .Select(p => p.AssemblyName)
-                    .Contains(g.Key.Name))
+                .Where(g => g.Key != null);
+
+            if (!IncludeNuGets)
+            {
+                groupedAssemblies = groupedAssemblies
+                    .Where(g => _projects
+                        .Where(p => p != project)
+                        .Select(p => p.AssemblyName)
+                        .Contains(g.Key.Name));
+            }
+
+            var actualReferences = groupedAssemblies
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .OrderBy(r => r.Target);
 
-            var editor = new ReferencesEditor(_projectAccess, project.FilePath);
 
-            var definedReferences = editor.GetReferencedProjects()
+            var definedReferences = _editor.GetReferencedProjects(project.FilePath)
                 .OrderBy(n => n);
 
             return new ReferencesReport(project.Name, definedReferences, actualReferences);

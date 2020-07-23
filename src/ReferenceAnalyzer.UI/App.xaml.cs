@@ -25,7 +25,7 @@ namespace ReferenceAnalyzer.UI
                     DataContext = new MainWindowViewModel(
                         new Settings(),
                         new Core.ReferenceAnalyzer(
-                            new MessageSink(), new ProjectAccess())),
+                            new MessageSink(), new ReferencesEditor(new ProjectAccess()))),
                 };
             }
 

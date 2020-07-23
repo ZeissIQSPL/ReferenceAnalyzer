@@ -33,6 +33,11 @@ namespace ReferenceAnalyzer.UI.Views
                         view => view.StopOnError.IsChecked)
                     .DisposeWith(disposableRegistration);
 
+                this.Bind(ViewModel,
+                        viewModel => viewModel.IncludeNuGets,
+                        view => view.IncludeNuGets.IsChecked)
+                    .DisposeWith(disposableRegistration);
+
                 BindProgress(disposableRegistration);
 
                 ViewModel.MessagePopup
@@ -72,6 +77,7 @@ namespace ReferenceAnalyzer.UI.Views
         public Button AnalyzeAllCommand => this.FindControl<Button>(nameof(AnalyzeAllCommand));
         public Button AnalyzeSelectedCommand => this.FindControl<Button>(nameof(AnalyzeSelectedCommand));
         public ProgressBar Progress => this.FindControl<ProgressBar>(nameof(Progress));
+        public CheckBox IncludeNuGets => this.FindControl<CheckBox>(nameof(IncludeNuGets));
 
 
         private void BindLists(CompositeDisposable disposableRegistration)
