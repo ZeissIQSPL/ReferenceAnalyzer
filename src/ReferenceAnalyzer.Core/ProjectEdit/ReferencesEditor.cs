@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace ReferenceAnalyzer.Core.ProjectEdit
@@ -22,12 +23,18 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
 
         public IEnumerable<string> GetReferencedProjects(string projectPath)
         {
+            return GetReferencedProjectsPaths(projectPath)
+                .Select(path => GetOutputAssemblyName(path) ?? Path.GetFileNameWithoutExtension(path));
+        }
+
+        public IEnumerable<string> GetReferencedProjectsPaths(string projectPath)
+        {
             var root = GetProjectContent(projectPath).Root;
             return root.Descendants(WithNamespace(root, "ProjectReference"))
                 .Select(n =>
                 {
-                    var path = n.Attribute("Include").Value;
-                    return Path.GetFileNameWithoutExtension(path);
+                    var relativePath = n.Attribute("Include").Value;
+                    return Path.Combine(Path.Combine(projectPath, ".."), relativePath);
                 });
         }
 
@@ -43,6 +50,13 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
                 });
         }
 
+        public string? GetOutputAssemblyName(string projectPath)
+        {
+            var root = GetProjectContent(projectPath).Root;
+            return root.Descendants(WithNamespace(root, "ProjectName")).FirstOrDefault()?.Value ??
+                   root.Descendants(WithNamespace(root, "AssemblyName")).FirstOrDefault()?.Value;
+        }
+
         public void RemoveReferencedProjects(string projectPath, IEnumerable<string> projects)
         {
             var doc = GetProjectContent(projectPath);
@@ -56,8 +70,7 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
                 })
                 .Remove();
 
-            using var fileStream = File.OpenWrite(projectPath);
-            doc.Save(fileStream);
+            doc.Save(projectPath);
         }
 
         private XName WithNamespace(XElement root, string name)

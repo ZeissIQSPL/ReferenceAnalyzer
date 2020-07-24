@@ -88,25 +88,36 @@ namespace ReferenceAnalyzer.Core
 
             var outputPath = Path.GetFullPath(Path.Combine(project.OutputFilePath!, ".."));
 
-            var assemblies = Directory.GetFiles(outputPath, "*.dll")
+            var referencedProjects = _editor.GetReferencedProjects(project.FilePath);
+            var assemblies = referencedProjects
+                .Select(p =>
+                {
+                    var dll = Path.Combine(outputPath, p + ".dll");
+                    if (File.Exists(dll))
+                        return dll;
+                    var exe = Path.Combine(outputPath, p + ".exe");
+
+                    return File.Exists(exe) ? exe : null;
+                })
+                .Where(f => f != null)
                 .Select(f => MetadataReference.CreateFromFile(f));
 
             compilation = compilation!.AddReferences(assemblies);
 
-            await using var dummy = new MemoryStream();
-            var compilationResult = compilation.Emit(dummy);
+            //await using var dummy = new MemoryStream();
+            //var compilationResult = compilation.Emit(dummy);
 
-            foreach (var d in compilationResult.Diagnostics)
-                _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
+            //foreach (var d in compilationResult.Diagnostics)
+            //    _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
 
-            if (ThrowOnCompilationFailures &&
-                compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
-            {
-                var errors = compilationResult.Diagnostics
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                    .Select(d => d.GetMessage() + "\n");
-                throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
-            }
+            //if (ThrowOnCompilationFailures &&
+            //    compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+            //{
+            //    var errors = compilationResult.Diagnostics
+            //        .Where(d => d.Severity == DiagnosticSeverity.Error)
+            //        .Select(d => d.GetMessage() + "\n");
+            //    throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
+            //}
 
             var visitor = new ReferencesWalker(compilation);
 
