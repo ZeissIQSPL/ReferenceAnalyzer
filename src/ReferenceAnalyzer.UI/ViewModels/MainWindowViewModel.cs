@@ -35,7 +35,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
             {
                 {"AlwaysCompileMarkupFilesInSeparateDomain", "false"},
                 {"Configuration", "Debug"},
-                {"Platform", "x64"}
+                {"Platform", "x64"},
+                {"VCTargetsPath", @"C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140"}
             };
 
             _path = settings.SolutionPath;
