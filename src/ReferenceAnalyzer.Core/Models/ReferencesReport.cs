@@ -6,15 +6,17 @@ namespace ReferenceAnalyzer.Core
     public class ReferencesReport
     {
         public ReferencesReport(string project, IEnumerable<string> definedReferences,
-            IEnumerable<ActualReference> actualReferences)
+            IEnumerable<ActualReference> actualReferences, string projectPath)
         {
             Project = project;
             DefinedReferences = definedReferences;
             ActualReferences = actualReferences;
+            ProjectPath = projectPath;
         }
 
         public IEnumerable<ActualReference> ActualReferences { get; }
         public string Project { get; }
+        public string ProjectPath { get; }
         public IEnumerable<string> DefinedReferences { get; }
 
         public IEnumerable<string> DiffReferences => DefinedReferences
@@ -33,6 +35,7 @@ namespace ReferenceAnalyzer.Core
         public static ReferencesReport Empty(string project) =>
             new ReferencesReport(project,
                 Enumerable.Empty<string>(),
-                Enumerable.Empty<ActualReference>());
+                Enumerable.Empty<ActualReference>(),
+                "");
     }
 }

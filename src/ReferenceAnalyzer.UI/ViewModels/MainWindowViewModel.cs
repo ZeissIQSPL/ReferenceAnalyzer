@@ -9,6 +9,7 @@ using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
+using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.UI.Models;
 
 namespace ReferenceAnalyzer.UI.ViewModels
@@ -23,14 +24,14 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private double _progress;
         private bool _includeNuGets = false;
 
-        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
+        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
-            if (projectProvider == null)
-                throw new ArgumentNullException(nameof(projectProvider));
+            if (analyzer == null)
+                throw new ArgumentNullException(nameof(analyzer));
 
-            projectProvider.BuildProperties = new Dictionary<string, string>
+            analyzer.BuildProperties = new Dictionary<string, string>
             {
                 {"AlwaysCompileMarkupFilesInSeparateDomain", "false"},
                 {"Configuration", "Debug"},
@@ -39,11 +40,11 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
             _path = settings.SolutionPath;
 
-            projectProvider.ProgressReporter = new Progress<double>(p => Progress = p);
+            analyzer.ProgressReporter = new Progress<double>(p => Progress = p);
 
-            SetupCommands(projectProvider);
+            SetupCommands(analyzer, editor);
 
-            SetupProperties(settings, projectProvider);
+            SetupProperties(settings, analyzer);
         }
 
         private void SetupProperties(ISettings settings, IReferenceAnalyzer projectProvider)
@@ -61,11 +62,30 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedProjectReport)));
         }
 
-        private void SetupCommands(IReferenceAnalyzer projectProvider)
+        private void SetupCommands(IReferenceAnalyzer projectProvider, IReferencesEditor editor)
         {
             SetupLoad(projectProvider);
 
             SetupAnalyze(projectProvider);
+
+            SetupRemove(editor);
+        }
+
+        private void SetupRemove(IReferencesEditor editor)
+        {
+            var canRemove = this.WhenAnyValue(x => x.SelectedProjectReport,
+                report => report.DiffReferences.Any());
+
+            RemoveUnused = ReactiveCommand.CreateFromTask<ReferencesReport, Unit>(report =>
+                    RemoveReferences(report, editor),
+                canRemove);
+        }
+
+        private static Task<Unit> RemoveReferences(ReferencesReport report, IReferencesEditor editor)
+        {
+            editor.RemoveReferencedProjects(report.ProjectPath, report.DiffReferences);
+
+            return Task.FromResult(Unit.Default);
         }
 
         private void SetupLoad(IReferenceAnalyzer projectProvider)
@@ -161,6 +181,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
             get => _progress;
             set => this.RaiseAndSetIfChanged(ref _progress, value);
         }
+
+        public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
 

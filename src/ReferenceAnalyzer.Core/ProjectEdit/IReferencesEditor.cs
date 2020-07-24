@@ -6,5 +6,6 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
     {
         IEnumerable<string> GetReferencedProjects(string projectPath);
         IEnumerable<string> GetReferencedPackages(string projectPath);
+        void RemoveReferencedProjects(string projectPath, IEnumerable<string> projects);
     }
 }

@@ -43,6 +43,23 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
                 });
         }
 
+        public void RemoveReferencedProjects(string projectPath, IEnumerable<string> projects)
+        {
+            var doc = GetProjectContent(projectPath);
+            var root = doc.Root;
+            root.Descendants(WithNamespace(root, "ProjectReference"))
+                .Where(n =>
+                {
+                    var path = n.Attribute("Include").Value;
+                    var projectName = Path.GetFileNameWithoutExtension(path);
+                    return projects.Contains(projectName);
+                })
+                .Remove();
+
+            using var fileStream = File.OpenWrite(projectPath);
+            doc.Save(fileStream);
+        }
+
         private XName WithNamespace(XElement root, string name)
         {
             var namespaceName = root.GetDefaultNamespace().NamespaceName;

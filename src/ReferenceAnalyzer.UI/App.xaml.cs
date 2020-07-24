@@ -20,12 +20,14 @@ namespace ReferenceAnalyzer.UI
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                var referencesEditor = new ReferencesEditor(new ProjectAccess());
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = new MainWindowViewModel(
                         new Settings(),
                         new Core.ReferenceAnalyzer(
-                            new MessageSink(), new ReferencesEditor(new ProjectAccess()))),
+                            new MessageSink(), referencesEditor),
+                        referencesEditor),
                 };
             }
 

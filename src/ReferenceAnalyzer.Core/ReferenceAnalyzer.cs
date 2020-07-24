@@ -134,7 +134,7 @@ namespace ReferenceAnalyzer.Core
             var definedReferences = _editor.GetReferencedProjects(project.FilePath)
                 .OrderBy(n => n);
 
-            return new ReferencesReport(project.Name, definedReferences, actualReferences);
+            return new ReferencesReport(project.Name, definedReferences, actualReferences, project.FilePath);
         }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()

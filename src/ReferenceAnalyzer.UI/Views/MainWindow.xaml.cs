@@ -78,6 +78,7 @@ namespace ReferenceAnalyzer.UI.Views
         public Button AnalyzeSelectedCommand => this.FindControl<Button>(nameof(AnalyzeSelectedCommand));
         public ProgressBar Progress => this.FindControl<ProgressBar>(nameof(Progress));
         public CheckBox IncludeNuGets => this.FindControl<CheckBox>(nameof(IncludeNuGets));
+        public Button RemoveUnusedCommand => this.FindControl<Button>(nameof(RemoveUnusedCommand));
 
 
         private void BindLists(CompositeDisposable disposableRegistration)
@@ -124,6 +125,12 @@ namespace ReferenceAnalyzer.UI.Views
                     viewModel => viewModel.AnalyzeSelected,
                     view => view.AnalyzeSelectedCommand,
                     viewModel => viewModel.SelectedProject)
+                .DisposeWith(disposableRegistration);
+
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.RemoveUnused,
+                    view => view.RemoveUnusedCommand,
+                    viewModel => viewModel.SelectedProjectReport)
                 .DisposeWith(disposableRegistration);
         }
     }
