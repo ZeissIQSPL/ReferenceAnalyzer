@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using Avalonia.Controls;
@@ -43,6 +44,12 @@ namespace ReferenceAnalyzer.UI.Views
                         interaction.SetOutput(Unit.Default);
                     });
 
+                this.OneWayBind(ViewModel,
+                        viewModel => viewModel.Log,
+                        view => view.Logs.Text,
+                        lines => lines)
+                    .DisposeWith(disposableRegistration);
+
                 BindCommands(disposableRegistration);
                 BindLists(disposableRegistration);
             });
@@ -72,6 +79,7 @@ namespace ReferenceAnalyzer.UI.Views
         public Button AnalyzeAllCommand => this.FindControl<Button>(nameof(AnalyzeAllCommand));
         public Button AnalyzeSelectedCommand => this.FindControl<Button>(nameof(AnalyzeSelectedCommand));
         public ProgressBar Progress => this.FindControl<ProgressBar>(nameof(Progress));
+        public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
 
 
         private void BindLists(CompositeDisposable disposableRegistration)

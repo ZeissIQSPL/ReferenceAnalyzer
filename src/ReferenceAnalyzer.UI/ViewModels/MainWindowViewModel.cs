@@ -10,6 +10,7 @@ using DynamicData.Binding;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.UI.Models;
+using ReferenceAnalyzer.UI.Services;
 
 namespace ReferenceAnalyzer.UI.ViewModels
 {
@@ -21,13 +22,15 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private bool _stopOnError = true;
         private string _selectedProject;
         private double _progress;
+        private string _log;
 
-        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider)
+        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider, IReadableMessageSink messageSink)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
             if (projectProvider == null)
                 throw new ArgumentNullException(nameof(projectProvider));
+            MessageSink = messageSink;
 
             projectProvider.BuildProperties = new Dictionary<string, string>
             {
@@ -43,6 +46,10 @@ namespace ReferenceAnalyzer.UI.ViewModels
             SetupCommands(projectProvider);
 
             SetupProperties(settings, projectProvider);
+
+            MessageSink.Lines.ToObservableChangeSet()
+                .Select(_ => MessageSink.Lines)
+                .Subscribe(lines => Log = string.Join('\n', lines));
         }
 
         private void SetupProperties(ISettings settings, IReferenceAnalyzer projectProvider)
@@ -150,6 +157,14 @@ namespace ReferenceAnalyzer.UI.ViewModels
         {
             get => _progress;
             set => this.RaiseAndSetIfChanged(ref _progress, value);
+        }
+
+        public IReadableMessageSink MessageSink { get; }
+
+        public string Log
+        {
+            get => _log;
+            set => this.RaiseAndSetIfChanged(ref _log, value);
         }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);

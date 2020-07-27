@@ -43,7 +43,10 @@
                 <CheckBox Margin="5,5,0,0" Name="StopOnError"></CheckBox>
                 <TextBlock Text="Stop on error"></TextBlock>
             </StackPanel>
-            <ListBox Name="Projects" DockPanel.Dock="Bottom">
+            <ScrollViewer DockPanel.Dock="Bottom" Height="300" VerticalScrollBarVisibility="Visible">
+                <TextBlock Name="Logs" TextWrapping="Wrap"/>
+            </ScrollViewer>
+            <ListBox Name="Projects">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}"/>

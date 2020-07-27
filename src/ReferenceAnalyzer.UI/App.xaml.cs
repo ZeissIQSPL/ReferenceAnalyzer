@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.UI.Models;
+using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using ReferenceAnalyzer.UI.Views;
 
@@ -19,12 +19,14 @@ namespace ReferenceAnalyzer.UI
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                var messageSink = new MessageSink();
+
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = new MainWindowViewModel(
                         new Settings(),
-                        new Core.ReferenceAnalyzer(
-                            new MessageSink())),
+                        new Core.ReferenceAnalyzer(messageSink),
+                        messageSink),
                 };
             }
 
