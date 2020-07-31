@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using ReferenceAnalyzer.Core.ProjectEdit;
 using TechTalk.SpecFlow;
 
 namespace ReferenceAnalyzer.Core.Tests
@@ -26,7 +27,12 @@ namespace ReferenceAnalyzer.Core.Tests
             sinkMock.Setup(m => m.Write(It.IsAny<string>()))
                 .Callback<string>(m => _sinkOutput = _sinkOutput + m + "\n");
 
-            _sut = new ReferenceAnalyzer(sinkMock.Object);
+            var editor = new Mock<IReferencesEditor>();
+
+            editor.Setup(m => m.GetReferencedProjects(It.IsAny<string>()))
+                .Returns(new [] {"Project2", "Project3"});
+
+            _sut = new ReferenceAnalyzer(sinkMock.Object, editor.Object);
         }
 
         [Given(@"I have a solution (.*)")]
@@ -56,6 +62,10 @@ namespace ReferenceAnalyzer.Core.Tests
             _sut.ProgressReporter = _progress.Object;
         }
 
+        [Given(@"I enable NuGet analysis")]
+        public void GivenIEnableNuGetAnalysis() => _sut.IncludeNuGets = true;
+
+
         private static string GetTestSamplesLocation() =>
             Assembly.GetExecutingAssembly().CodeBase?.Split("src")[0] + "test_samples";
 
@@ -80,7 +90,7 @@ namespace ReferenceAnalyzer.Core.Tests
 
         [Then(@"Referenced projects should be within defined references list")]
         public void ThenReferencedProjectsShouldBeWithinDefinedReferencesList() =>
-            _result.DefinedReferences.Should().Contain("Project2").And.Contain("Project3");
+            _result.DefinedReferences.Should().Contain(new[] {"Project2", "Project3"});
 
         [Then(@"Only (.*) should be in actual references")]
         public void ThenOnlyShouldBeInActualReferences(string referenceName) =>

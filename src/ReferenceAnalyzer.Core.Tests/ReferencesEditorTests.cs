@@ -22,31 +22,19 @@ namespace ReferenceAnalyzer.Core.Tests
             _accessMock.Setup(m => m.Read(_projectName))
                 .Returns(content);
 
-            _sut = new ReferencesEditor(_accessMock.Object, _projectName);
-        }
-
-        [Fact]
-        public void ProjectContentIsReadOnlyOnce()
-        {
-            _sut.GetReferencedProjects();
-
-            _accessMock.Verify(m => m.Read(_projectName), Times.Once);
-
-            _sut.GetReferencedProjects();
-
-            _accessMock.Verify(m => m.Read(_projectName), Times.Once);
+            _sut = new ReferencesEditor(_accessMock.Object);
         }
 
         [Fact]
         public void ProjectReferencesRetrieved()
         {
-            _sut.GetReferencedProjects().Should().BeEquivalentTo("Project2");
+            _sut.GetReferencedProjects(_projectName).Should().BeEquivalentTo("Project2");
         }
 
         [Fact]
         public void PackageReferencesRetrieved()
         {
-            _sut.GetReferencedPackages().Should().BeEquivalentTo("CommandLineParser");
+            _sut.GetReferencedPackages(_projectName).Should().BeEquivalentTo("CommandLineParser");
         }
     }
 }

@@ -35,10 +35,35 @@ namespace ReferenceAnalyzer.Core
 
                 if (invokedSymbol != null)
                 {
+                    ITypeSymbol? addedType = null;
+
                     if (invokedSymbol is ITypeSymbol type)
+                    {
                         Occurrences.Add(new ReferenceOccurrence(type, new ReferenceLocation()));
+                        addedType = type;
+                    }
+
                     if (invokedSymbol.ContainingType != null)
+                    {
                         Occurrences.Add(new ReferenceOccurrence(invokedSymbol.ContainingType, new ReferenceLocation()));
+                        addedType = invokedSymbol.ContainingType;
+                    }
+
+                    if (addedType != null)
+                    {
+                        var current = addedType.BaseType;
+
+                        while (current != null)
+                        {
+                            Occurrences.Add(new ReferenceOccurrence(current, new ReferenceLocation()));
+                            current = current.BaseType;
+                        }
+
+                        foreach (var @interface in addedType.Interfaces)
+                        {
+                            Occurrences.Add(new ReferenceOccurrence(@interface, new ReferenceLocation()));
+                        }
+                    }
                 }
             }
 

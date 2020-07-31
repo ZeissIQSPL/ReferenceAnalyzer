@@ -9,6 +9,7 @@ using Moq;
 using ReactiveUI.Testing;
 using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.Core;
+using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
 using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
@@ -24,6 +25,7 @@ namespace ReferenceAnalyzer.UI.Tests
         private IEnumerable<ReferencesReport> _reports;
         private TestScheduler _scheduler;
         private string _receivedPopupMessage;
+        private Mock<IReferencesEditor> _editor;
 
         public MainWindowViewModelTests()
         {
@@ -33,7 +35,8 @@ namespace ReferenceAnalyzer.UI.Tests
 
             new TestScheduler().With(scheduler =>
             {
-                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object);
+                _editor = new Mock<IReferencesEditor>();
+                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object);
 
                 _receivedPopupMessage = null;
                 _sut.MessagePopup
@@ -57,8 +60,8 @@ namespace ReferenceAnalyzer.UI.Tests
             _analyzerMock.Setup(m => m.Load(It.IsAny<string>()))
                 .Returns(Task.FromResult(new[] {"proj1", "proj2"}.AsEnumerable()));
 
-            var firstReport = new ReferencesReport("proj1", new[] {"ref1", "ref2"}, referencedProjects);
-            var secondReport = new ReferencesReport("proj2", new[] {"ref2", "ref3"}, Enumerable.Empty<ActualReference>());
+            var firstReport = new ReferencesReport("proj1", new[] {"ref1", "ref2"}, referencedProjects, "anyPath");
+            var secondReport = new ReferencesReport("proj2", new[] {"ref2", "ref3"}, Enumerable.Empty<ActualReference>(), "anyPath");
 
             _reports = new[] {firstReport, secondReport};
 
@@ -85,7 +88,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void Instantiates()
         {
-            Action a = () => _ = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object);
+            Action a = () => _ = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object);
 
             a.Should().NotThrow();
         }

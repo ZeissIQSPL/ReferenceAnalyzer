@@ -13,7 +13,12 @@ namespace ReferenceAnalyzer.Core.Tests
         private ReferencesWalker _sut;
         private CSharpCompilation _compilation;
 
-        public static IEnumerable<object[]> TestFiles => Directory.GetFiles(TestsHelper.GetTestFilesLocation()).Select(s => new [] {Path.GetFileName(s)});
+        public static IEnumerable<object[]> TestFiles =>
+            Directory.GetFiles(TestsHelper.GetTestFilesLocation(), "*.cs")
+                .Select(s => new[]
+                {
+                    Path.GetFileName(s)
+                });
 
         private void LoadFile(string name)
         {
@@ -28,7 +33,7 @@ namespace ReferenceAnalyzer.Core.Tests
 
         [Theory]
         [MemberData(nameof(TestFiles))]
-        public void MethodParameter(string fileName)
+        public void VisitorTest(string fileName)
         {
             LoadFile(fileName);
 

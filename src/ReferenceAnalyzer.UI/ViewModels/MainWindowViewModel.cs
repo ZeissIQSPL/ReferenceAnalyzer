@@ -9,6 +9,7 @@ using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
+using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.UI.Services;
 
@@ -19,33 +20,36 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
         private string _path;
-        private bool _stopOnError = true;
+        private bool _stopOnError = false;
         private string _selectedProject;
         private double _progress;
         private string _log;
+        private bool _includeNuGets = false;
 
-        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer projectProvider, IReadableMessageSink messageSink)
+        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor, IReadableMessageSink messageSink)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
-            if (projectProvider == null)
-                throw new ArgumentNullException(nameof(projectProvider));
-            MessageSink = messageSink;
+            if (analyzer == null)
+                throw new ArgumentNullException(nameof(analyzer));
 
-            projectProvider.BuildProperties = new Dictionary<string, string>
+            analyzer.BuildProperties = new Dictionary<string, string>
             {
                 {"AlwaysCompileMarkupFilesInSeparateDomain", "false"},
                 {"Configuration", "Debug"},
-                {"Platform", "x64"}
+                {"Platform", "x64"},
+                {"VCTargetsPath", @"C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140"}
             };
 
             _path = settings.SolutionPath;
 
-            projectProvider.ProgressReporter = new Progress<double>(p => Progress = p);
+            analyzer.ProgressReporter = new Progress<double>(p => Progress = p);
 
-            SetupCommands(projectProvider);
+            SetupCommands(analyzer, editor);
 
-            SetupProperties(settings, projectProvider);
+            SetupProperties(settings, analyzer);
+
+            MessageSink = messageSink;
 
             MessageSink.Lines.ToObservableChangeSet()
                 .Select(_ => MessageSink.Lines)
@@ -60,15 +64,37 @@ namespace ReferenceAnalyzer.UI.ViewModels
             this.WhenAnyValue(viewModel => viewModel.StopOnError)
                 .Subscribe(x => projectProvider.ThrowOnCompilationFailures = x);
 
+            this.WhenAnyValue(viewModel => viewModel.IncludeNuGets)
+                .Subscribe(x => projectProvider.IncludeNuGets = x);
+
             this.WhenAnyValue(viewModel => viewModel.SelectedProject, viewModel => viewModel.Reports.Count)
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedProjectReport)));
         }
 
-        private void SetupCommands(IReferenceAnalyzer projectProvider)
+        private void SetupCommands(IReferenceAnalyzer projectProvider, IReferencesEditor editor)
         {
             SetupLoad(projectProvider);
 
             SetupAnalyze(projectProvider);
+
+            SetupRemove(editor);
+        }
+
+        private void SetupRemove(IReferencesEditor editor)
+        {
+            var canRemove = this.WhenAnyValue(x => x.SelectedProjectReport,
+                report => report.DiffReferences.Any());
+
+            RemoveUnused = ReactiveCommand.CreateFromTask<ReferencesReport, Unit>(report =>
+                    RemoveReferences(report, editor),
+                canRemove);
+        }
+
+        private static Task<Unit> RemoveReferences(ReferencesReport report, IReferencesEditor editor)
+        {
+            editor.RemoveReferencedProjects(report.ProjectPath, report.DiffReferences);
+
+            return Task.FromResult(Unit.Default);
         }
 
         private void SetupLoad(IReferenceAnalyzer projectProvider)
@@ -151,6 +177,12 @@ namespace ReferenceAnalyzer.UI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
         }
 
+        public bool IncludeNuGets
+        {
+            get => _includeNuGets;
+            set => this.RaiseAndSetIfChanged(ref _includeNuGets, value);
+        }
+
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
 
         public double Progress
@@ -166,6 +198,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
             get => _log;
             set => this.RaiseAndSetIfChanged(ref _log, value);
         }
+
+        public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
 

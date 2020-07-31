@@ -6,17 +6,20 @@ using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
+using ReferenceAnalyzer.Core.ProjectEdit;
 
 namespace ReferenceAnalyzer.Core
 {
     public class ReferenceAnalyzer : IReferenceAnalyzer
     {
         private readonly IMessageSink _messageSink;
+        private readonly IReferencesEditor _editor;
         private List<Project> _projects = new List<Project>();
 
-        public ReferenceAnalyzer(IMessageSink messageSink)
+        public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor)
         {
             _messageSink = messageSink;
+            _editor = editor;
 
             InitializeMsBuild();
         }
@@ -25,6 +28,7 @@ namespace ReferenceAnalyzer.Core
         public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
         public bool ThrowOnCompilationFailures { get; set; } = true;
         public IProgress<double> ProgressReporter { get; set; } = new Progress<double>();
+        public bool IncludeNuGets { get; set; }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
         {
@@ -81,40 +85,67 @@ namespace ReferenceAnalyzer.Core
         private async Task<ReferencesReport> Analyze(Project project)
         {
             var compilation = await project.GetCompilationAsync();
-            if (compilation == null)
-                throw new ArgumentNullException(nameof(compilation));
 
-            await using var dummy = new MemoryStream();
-            var compilationResult = compilation.Emit(dummy);
+            var outputPath = Path.GetFullPath(Path.Combine(project.OutputFilePath!, ".."));
 
-            foreach (var d in compilationResult.Diagnostics)
-                _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
+            var referencedProjects = _editor.GetReferencedProjects(project.FilePath);
+            var assemblies = referencedProjects
+                .Select(p =>
+                {
+                    var dll = Path.Combine(outputPath, p + ".dll");
+                    if (File.Exists(dll))
+                        return dll;
+                    var exe = Path.Combine(outputPath, p + ".exe");
 
-            if (ThrowOnCompilationFailures &&
-                compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
-            {
-                var errors = compilationResult.Diagnostics
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                    .Select(d => d.GetMessage() + "\n");
-                throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
-            }
+                    return File.Exists(exe) ? exe : null;
+                })
+                .Where(f => f != null)
+                .Select(f => MetadataReference.CreateFromFile(f));
+
+            compilation = compilation!.AddReferences(assemblies);
+
+            //await using var dummy = new MemoryStream();
+            //var compilationResult = compilation.Emit(dummy);
+
+            //foreach (var d in compilationResult.Diagnostics)
+            //    _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
+
+            //if (ThrowOnCompilationFailures &&
+            //    compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+            //{
+            //    var errors = compilationResult.Diagnostics
+            //        .Where(d => d.Severity == DiagnosticSeverity.Error)
+            //        .Select(d => d.GetMessage() + "\n");
+            //    throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
+            //}
 
             var visitor = new ReferencesWalker(compilation);
 
             foreach (var tree in compilation.SyntaxTrees)
                 visitor.Visit(await tree.GetRootAsync());
 
-            var actualReferences = visitor.Occurrences
+            var groupedAssemblies = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
-                .Where(g => g.Key != null)
+                .Where(g => g.Key != null);
+
+            if (!IncludeNuGets)
+            {
+                groupedAssemblies = groupedAssemblies
+                    .Where(g => _projects
+                        .Where(p => p != project)
+                        .Select(p => p.AssemblyName)
+                        .Contains(g.Key.Name));
+            }
+
+            var actualReferences = groupedAssemblies
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .OrderBy(r => r.Target);
 
-            var definedReferences = compilation.ReferencedAssemblyNames
-                .Select(reference => reference.Name)
+
+            var definedReferences = _editor.GetReferencedProjects(project.FilePath)
                 .OrderBy(n => n);
 
-            return new ReferencesReport(project.Name, definedReferences, actualReferences);
+            return new ReferencesReport(project.Name, definedReferences, actualReferences, project.FilePath);
         }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()

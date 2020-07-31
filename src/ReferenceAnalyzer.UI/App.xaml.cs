@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using ReferenceAnalyzer.Core;
+using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
@@ -21,12 +23,15 @@ namespace ReferenceAnalyzer.UI
             {
                 var messageSink = new MessageSink();
 
+                var referencesEditor = new ReferencesEditor(new ProjectAccess());
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = new MainWindowViewModel(
                         new Settings(),
-                        new Core.ReferenceAnalyzer(messageSink),
-                        messageSink),
+                        new Core.ReferenceAnalyzer(
+                            messageSink, referencesEditor),
+                        referencesEditor,
+                        messageSink)
                 };
             }
 
