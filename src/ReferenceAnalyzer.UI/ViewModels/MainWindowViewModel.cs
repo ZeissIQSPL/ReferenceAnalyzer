@@ -24,7 +24,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private string _selectedProject;
         private double _progress;
         private string _log;
-        private bool _includeNuGets = false;
+        private string _whitelist;
 
         public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor, IReadableMessageSink messageSink)
         {
@@ -64,9 +64,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
             this.WhenAnyValue(viewModel => viewModel.StopOnError)
                 .Subscribe(x => projectProvider.ThrowOnCompilationFailures = x);
 
-            this.WhenAnyValue(viewModel => viewModel.IncludeNuGets)
-                .Subscribe(x => projectProvider.IncludeNuGets = x);
-
             this.WhenAnyValue(viewModel => viewModel.SelectedProject, viewModel => viewModel.Reports.Count)
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedProjectReport)));
         }
@@ -88,11 +85,18 @@ namespace ReferenceAnalyzer.UI.ViewModels
             RemoveUnused = ReactiveCommand.CreateFromTask<ReferencesReport, Unit>(report =>
                     RemoveReferences(report, editor),
                 canRemove);
+
+            RemoveAllUnused = ReactiveCommand.CreateFromTask<IEnumerable<ReferencesReport>, Unit>(async reports =>
+                {
+                    await Task.WhenAll(reports.Select(report => RemoveReferences(report, editor)));
+                    return Unit.Default;
+                },
+                this.WhenAnyValue(x => x.Reports.Count, count => count > 0));
         }
 
-        private static Task<Unit> RemoveReferences(ReferencesReport report, IReferencesEditor editor)
+        private Task<Unit> RemoveReferences(ReferencesReport report, IReferencesEditor editor)
         {
-            editor.RemoveReferencedProjects(report.ProjectPath, report.DiffReferences);
+            editor.RemoveReferencedProjects(report.ProjectPath, report.DiffReferences.Except(Whitelist.Split(',')));
 
             return Task.FromResult(Unit.Default);
         }
@@ -177,12 +181,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
         }
 
-        public bool IncludeNuGets
-        {
-            get => _includeNuGets;
-            set => this.RaiseAndSetIfChanged(ref _includeNuGets, value);
-        }
-
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
 
         public double Progress
@@ -200,6 +198,13 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
 
         public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
+        public ReactiveCommand<IEnumerable<ReferencesReport>, Unit> RemoveAllUnused { get; set; }
+
+        public string Whitelist
+        {
+            get => _whitelist;
+            set => this.RaiseAndSetIfChanged(ref _whitelist, value);
+        }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
 

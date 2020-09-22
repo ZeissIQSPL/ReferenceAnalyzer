@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace ReferenceAnalyzer.Core
 {
-    public class ActualReference
+    public class ActualReference : IEquatable<ActualReference>
     {
         public ActualReference(string target, IEnumerable<ReferenceOccurrence> occurrences)
         {
@@ -20,7 +21,7 @@ namespace ReferenceAnalyzer.Core
             return obj.GetType() == GetType() && Equals((ActualReference)obj);
         }
 
-        protected bool Equals(ActualReference other) => other != null && Target == other.Target;
+        public bool Equals(ActualReference other) => other != null && Target == other.Target;
 
         public override int GetHashCode() => Target != null ? Target.GetHashCode() : 0;
 

@@ -11,6 +11,7 @@ using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
+using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
 
@@ -26,6 +27,7 @@ namespace ReferenceAnalyzer.UI.Tests
         private TestScheduler _scheduler;
         private string _receivedPopupMessage;
         private Mock<IReferencesEditor> _editor;
+        private Mock<IReadableMessageSink> _sinkMock;
 
         public MainWindowViewModelTests()
         {
@@ -36,7 +38,8 @@ namespace ReferenceAnalyzer.UI.Tests
             new TestScheduler().With(scheduler =>
             {
                 _editor = new Mock<IReferencesEditor>();
-                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object);
+                _sinkMock = new Mock<IReadableMessageSink>();
+                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object, _sinkMock.Object);
 
                 _receivedPopupMessage = null;
                 _sut.MessagePopup
@@ -88,7 +91,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void Instantiates()
         {
-            Action a = () => _ = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object);
+            Action a = () => _ = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object, _sinkMock.Object);
 
             a.Should().NotThrow();
         }

@@ -7,6 +7,7 @@ using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using ReferenceAnalyzer.Core.ProjectEdit;
+using ReferenceAnalyzer.Core.Util;
 
 namespace ReferenceAnalyzer.Core
 {
@@ -14,12 +15,15 @@ namespace ReferenceAnalyzer.Core
     {
         private readonly IMessageSink _messageSink;
         private readonly IReferencesEditor _editor;
+        private readonly XamlReferencesReader _xamlReferencesReader;
         private List<Project> _projects = new List<Project>();
 
-        public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor)
+        public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor,
+            XamlReferencesReader xamlReferencesReader)
         {
             _messageSink = messageSink;
             _editor = editor;
+            _xamlReferencesReader = xamlReferencesReader;
 
             InitializeMsBuild();
         }
@@ -28,7 +32,6 @@ namespace ReferenceAnalyzer.Core
         public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
         public bool ThrowOnCompilationFailures { get; set; } = true;
         public IProgress<double> ProgressReporter { get; set; } = new Progress<double>();
-        public bool IncludeNuGets { get; set; }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
         {
@@ -124,21 +127,22 @@ namespace ReferenceAnalyzer.Core
             foreach (var tree in compilation.SyntaxTrees)
                 visitor.Visit(await tree.GetRootAsync());
 
+            var xamlFiles = Directory.GetParent(project.FilePath)
+                .GetFiles("*.xaml", SearchOption.AllDirectories)
+                .Select(f => Path.Combine(f.Directory.FullName, f.Name));
+
+
+            var xamlReferences = xamlFiles.SelectMany(f => _xamlReferencesReader.GetReferences(f));
+
             var groupedAssemblies = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
                 .Where(g => g.Key != null);
 
-            if (!IncludeNuGets)
-            {
-                groupedAssemblies = groupedAssemblies
-                    .Where(g => _projects
-                        .Where(p => p != project)
-                        .Select(p => p.AssemblyName)
-                        .Contains(g.Key.Name));
-            }
-
             var actualReferences = groupedAssemblies
                 .Select(g => new ActualReference(g.Key.Name, g))
+                .Concat(xamlReferences
+                    .Select(r => new ActualReference(r, Enumerable.Empty<ReferenceOccurrence>())))
+                .Distinct()
                 .OrderBy(r => r.Target);
 
 

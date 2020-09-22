@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ReferenceAnalyzer.Core;assembly=ReferenceAnalyzer.Core"
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
-        mc:Ignorable="d" Width="1600" Height="900"
+        mc:Ignorable="d" Width="800" Height="450"
         x:Class="ReferenceAnalyzer.UI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="ReferenceAnalyzer.UI">
@@ -23,15 +23,14 @@
             <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
             <Button Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>
             <Button Name="RemoveUnusedCommand" DockPanel.Dock="Top">Remove unused</Button>
-            <Button Name="RemoveAllUnusedCommand" DockPanel.Dock="Top">Remove all unused</Button>
             <ProgressBar Name="Progress" DockPanel.Dock="Top" Minimum="0" Maximum="1"/>
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
                 <CheckBox Name="StopOnError"></CheckBox>
                 <TextBlock Text="Stop on error"></TextBlock>
             </StackPanel>
-            <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
-                <TextBlock Text="Whitelist"></TextBlock>
-                <TextBox Name="Whitelist"></TextBox>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                <CheckBox Name="IncludeNuGets"></CheckBox>
+                <TextBlock Text="Include NuGets"></TextBlock>
             </StackPanel>
             <ScrollViewer DockPanel.Dock="Bottom" Height="300" VerticalScrollBarVisibility="Visible">
                 <TextBlock Name="Logs" TextWrapping="Wrap"/>

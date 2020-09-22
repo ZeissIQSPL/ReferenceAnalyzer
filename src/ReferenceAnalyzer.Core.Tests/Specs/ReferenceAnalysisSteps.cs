@@ -63,7 +63,7 @@ namespace ReferenceAnalyzer.Core.Tests
         }
 
         [Given(@"I enable NuGet analysis")]
-        public void GivenIEnableNuGetAnalysis() => _sut.IncludeNuGets = true;
+        public void GivenIEnableNuGetAnalysis() => true;
 
 
         private static string GetTestSamplesLocation() =>

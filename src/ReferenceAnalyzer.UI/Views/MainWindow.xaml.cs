@@ -34,11 +34,6 @@ namespace ReferenceAnalyzer.UI.Views
                         view => view.StopOnError.IsChecked)
                     .DisposeWith(disposableRegistration);
 
-                this.Bind(ViewModel,
-                        viewModel => viewModel.IncludeNuGets,
-                        view => view.IncludeNuGets.IsChecked)
-                    .DisposeWith(disposableRegistration);
-
                 BindProgress(disposableRegistration);
 
                 ViewModel.MessagePopup
@@ -53,6 +48,11 @@ namespace ReferenceAnalyzer.UI.Views
                         viewModel => viewModel.Log,
                         view => view.Logs.Text,
                         lines => lines)
+                    .DisposeWith(disposableRegistration);
+
+                this.Bind(ViewModel,
+                        viewModel => viewModel.Whitelist,
+                        view => view.Whitelist.Text)
                     .DisposeWith(disposableRegistration);
 
                 BindCommands(disposableRegistration);
@@ -86,7 +86,9 @@ namespace ReferenceAnalyzer.UI.Views
         public ProgressBar Progress => this.FindControl<ProgressBar>(nameof(Progress));
         public CheckBox IncludeNuGets => this.FindControl<CheckBox>(nameof(IncludeNuGets));
         public Button RemoveUnusedCommand => this.FindControl<Button>(nameof(RemoveUnusedCommand));
+        public Button RemoveAllUnusedCommand => this.FindControl<Button>(nameof(RemoveAllUnusedCommand));
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
+        public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
 
 
         private void BindLists(CompositeDisposable disposableRegistration)
@@ -139,6 +141,12 @@ namespace ReferenceAnalyzer.UI.Views
                     viewModel => viewModel.RemoveUnused,
                     view => view.RemoveUnusedCommand,
                     viewModel => viewModel.SelectedProjectReport)
+                .DisposeWith(disposableRegistration);
+
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.RemoveAllUnused,
+                    view => view.RemoveAllUnusedCommand,
+                    viewModel => viewModel.Reports)
                 .DisposeWith(disposableRegistration);
         }
     }
