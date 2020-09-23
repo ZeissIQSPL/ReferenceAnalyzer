@@ -15,12 +15,12 @@ using ReferenceAnalyzer.UI.Services;
 
 namespace ReferenceAnalyzer.UI.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ReactiveObject
     {
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
         private string _path;
-        private bool _stopOnError = false;
+        private bool _stopOnError;
         private string _selectedProject;
         private double _progress;
         private string _log;
@@ -32,7 +32,72 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 throw new ArgumentNullException(nameof(settings));
             if (analyzer == null)
                 throw new ArgumentNullException(nameof(analyzer));
+            if (editor == null)
+                throw new ArgumentNullException(nameof(editor));
+            if (messageSink == null)
+                throw new ArgumentNullException(nameof(messageSink));
 
+            ConfigureAnalyzer(analyzer);
+            SetupSettings(settings);
+            SetupCommands(analyzer, editor);
+            SetupProperties(analyzer);
+            SetupSink(messageSink);
+        }
+
+        public IReadableMessageSink MessageSink { get; set; }
+
+        public ReadOnlyObservableCollection<ReferencesReport> Reports => _reports;
+        public ReadOnlyObservableCollection<string> Projects => _projects;
+
+        public ReactiveCommand<Unit, IEnumerable<string>> Load { get; private set; }
+        public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
+        public ReactiveCommand<string, ReferencesReport> AnalyzeSelected { get; set; }
+        public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
+        public ReactiveCommand<IEnumerable<ReferencesReport>, Unit> RemoveAllUnused { get; set; }
+
+        public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
+
+        public string Path
+        {
+            get => _path;
+            set => this.RaiseAndSetIfChanged(ref _path, value);
+        }
+
+        public ReferencesReport SelectedProjectReport =>
+            Reports.FirstOrDefault(r => r.Project == SelectedProject) ?? ReferencesReport.Empty();
+
+        public string SelectedProject
+        {
+            get => _selectedProject;
+            set => this.RaiseAndSetIfChanged(ref _selectedProject, value);
+        }
+
+        public bool StopOnError
+        {
+            get => _stopOnError;
+            set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
+        }
+
+        public double Progress
+        {
+            get => _progress;
+            set => this.RaiseAndSetIfChanged(ref _progress, value);
+        }
+
+        public string Log
+        {
+            get => _log;
+            set => this.RaiseAndSetIfChanged(ref _log, value);
+        }
+
+        public string Whitelist
+        {
+            get => _whitelist;
+            set => this.RaiseAndSetIfChanged(ref _whitelist, value);
+        }
+
+        private void ConfigureAnalyzer(IReferenceAnalyzer analyzer)
+        {
             analyzer.BuildProperties = new Dictionary<string, string>
             {
                 {"AlwaysCompileMarkupFilesInSeparateDomain", "false"},
@@ -41,14 +106,11 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 {"VCTargetsPath", @"C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\"}
             };
 
-            _path = settings.SolutionPath;
-
             analyzer.ProgressReporter = new Progress<double>(p => Progress = p);
+        }
 
-            SetupCommands(analyzer, editor);
-
-            SetupProperties(settings, analyzer);
-
+        private void SetupSink(IReadableMessageSink messageSink)
+        {
             MessageSink = messageSink;
 
             MessageSink.Lines.ToObservableChangeSet()
@@ -56,13 +118,18 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe(lines => Log = string.Join('\n', lines));
         }
 
-        private void SetupProperties(ISettings settings, IReferenceAnalyzer projectProvider)
+        private void SetupSettings(ISettings settings)
         {
+            _path = settings.SolutionPath;
+
             this.WhenAnyValue(viewModel => viewModel.Path)
                 .Subscribe(x => settings.SolutionPath = x);
+        }
 
+        private void SetupProperties(IReferenceAnalyzer analyzer)
+        {
             this.WhenAnyValue(viewModel => viewModel.StopOnError)
-                .Subscribe(x => projectProvider.ThrowOnCompilationFailures = x);
+                .Subscribe(x => analyzer.ThrowOnCompilationFailures = x);
 
             this.WhenAnyValue(viewModel => viewModel.SelectedProject, viewModel => viewModel.Reports.Count)
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedProjectReport)));
@@ -71,10 +138,60 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private void SetupCommands(IReferenceAnalyzer projectProvider, IReferencesEditor editor)
         {
             SetupLoad(projectProvider);
-
             SetupAnalyze(projectProvider);
-
             SetupRemove(editor);
+        }
+
+        private void SetupLoad(IReferenceAnalyzer projectProvider)
+        {
+            var canLoad = this.WhenAnyValue(x => x.Path,
+                path => !string.IsNullOrEmpty(path));
+
+            Load = ReactiveCommand.CreateFromTask(() =>
+                    LoadProjects(projectProvider),
+                canLoad);
+
+            Load.ThrownExceptions
+                .Subscribe(async error => await MessagePopup.Handle(error.Message));
+
+            var projects = new SourceList<string>();
+
+            Load.Subscribe(p => projects.AddRange(p));
+            Load.IsExecuting
+                .Where(executionStarted => executionStarted)
+                .Subscribe(_ => projects.Clear());
+
+            projects.Connect()
+                .Bind(out _projects)
+                .Subscribe();
+        }
+
+        private void SetupAnalyze(IReferenceAnalyzer analyzer)
+        {
+            var canAnalyze = Projects.ToObservableChangeSet()
+                .Select(_ => Projects?.Any() == true);
+
+            Analyze = ReactiveCommand.CreateFromObservable<IEnumerable<string>, ReferencesReport>(projects =>
+                    Observable.Create<ReferencesReport>(o =>
+                        AnalyzeReferences(analyzer, o, projects)),
+                canAnalyze);
+
+            var reports = new SourceList<ReferencesReport>();
+
+            Analyze.Subscribe(r => reports.Add(r));
+            Analyze.IsExecuting
+                .Where(e => e)
+                .Subscribe(_ => reports.Clear());
+
+            reports.Connect()
+                .Bind(out _reports)
+                .Subscribe();
+
+            var canAnalyzeSelected = this.WhenAnyValue(vm => vm.SelectedProject)
+                .Select(p => !string.IsNullOrEmpty(p));
+
+            AnalyzeSelected = ReactiveCommand.CreateFromObservable<string, ReferencesReport>(p =>
+                Analyze.Execute(new[] {p}), canAnalyzeSelected);
         }
 
         private void SetupRemove(IReferencesEditor editor)
@@ -101,118 +218,14 @@ namespace ReferenceAnalyzer.UI.ViewModels
             return Task.FromResult(Unit.Default);
         }
 
-        private void SetupLoad(IReferenceAnalyzer projectProvider)
-        {
-            var canLoad = this.WhenAnyValue(x => x.Path,
-                path => !string.IsNullOrEmpty(path));
+        private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer analyzer) =>
+            await analyzer.Load(Path);
 
-            Load = ReactiveCommand.CreateFromTask(() =>
-                    LoadProjects(projectProvider),
-                canLoad);
-
-            Load.ThrownExceptions
-                .Subscribe(async error => await MessagePopup.Handle(error.Message));
-
-            var projects = new SourceList<string>();
-            Load.Subscribe(p => projects.AddRange(p));
-            Load.IsExecuting
-                .Where(e => e)
-                .Subscribe(_ => projects.Clear());
-
-            projects.Connect()
-                .Bind(out _projects)
-                .Subscribe();
-        }
-
-        private void SetupAnalyze(IReferenceAnalyzer projectProvider)
-        {
-            var canAnalyze = Projects.ToObservableChangeSet()
-                .Select(_ => Projects?.Any() == true);
-
-            Analyze = ReactiveCommand.CreateFromObservable<IEnumerable<string>, ReferencesReport>(projects =>
-                    Observable.Create<ReferencesReport>(o =>
-                        LoadReferencesReports(projectProvider, o, projects)),
-                canAnalyze);
-
-            var reports = new SourceList<ReferencesReport>();
-            Analyze.Subscribe(r => reports.Add(r));
-            Analyze.IsExecuting
-                .Where(e => e)
-                .Subscribe(_ => reports.Clear());
-
-            reports.Connect()
-                .Bind(out _reports)
-                .Subscribe();
-
-            var canAnalyzeSelected = this.WhenAnyValue(vm => vm.SelectedProject)
-                .Select(p => !string.IsNullOrEmpty(p));
-
-            AnalyzeSelected = ReactiveCommand.CreateFromObservable<string, ReferencesReport>(p =>
-                Analyze.Execute(new[] {p}), canAnalyzeSelected);
-        }
-
-        public ReactiveCommand<string, ReferencesReport> AnalyzeSelected { get; set; }
-
-        public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
-
-        public string Path
-        {
-            get => _path;
-            set => this.RaiseAndSetIfChanged(ref _path, value);
-        }
-
-        public ReferencesReport SelectedProjectReport =>
-            Reports.FirstOrDefault(r => r.Project == SelectedProject) ?? ReferencesReport.Empty(SelectedProject);
-
-        public string SelectedProject
-        {
-            get => _selectedProject;
-            set => this.RaiseAndSetIfChanged(ref _selectedProject, value);
-        }
-
-        public ReadOnlyObservableCollection<ReferencesReport> Reports => _reports;
-        public ReadOnlyObservableCollection<string> Projects => _projects;
-
-        public ReactiveCommand<Unit, IEnumerable<string>> Load { get; private set; }
-
-        public bool StopOnError
-        {
-            get => _stopOnError;
-            set => this.RaiseAndSetIfChanged(ref _stopOnError, value);
-        }
-
-        public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
-
-        public double Progress
-        {
-            get => _progress;
-            set => this.RaiseAndSetIfChanged(ref _progress, value);
-        }
-
-        public IReadableMessageSink MessageSink { get; }
-
-        public string Log
-        {
-            get => _log;
-            set => this.RaiseAndSetIfChanged(ref _log, value);
-        }
-
-        public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
-        public ReactiveCommand<IEnumerable<ReferencesReport>, Unit> RemoveAllUnused { get; set; }
-
-        public string Whitelist
-        {
-            get => _whitelist;
-            set => this.RaiseAndSetIfChanged(ref _whitelist, value);
-        }
-
-        private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
-
-        private static async Task LoadReferencesReports(IReferenceAnalyzer projectProvider,
+        private static async Task AnalyzeReferences(IReferenceAnalyzer analyzer,
             IObserver<ReferencesReport> observer,
             IEnumerable<string> projects)
         {
-            await foreach (var element in projectProvider.Analyze(projects))
+            await foreach (var element in analyzer.Analyze(projects))
                 observer.OnNext(element);
             observer.OnCompleted();
         }
