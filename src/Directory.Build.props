@@ -7,5 +7,6 @@
     <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
     <OutputPath>$(BuildDir)/bin/$(Platform)/$(Configuration)/$(MSBuildProjectName)</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
+    <UsingToolMicrosoftNetCompilers>false</UsingToolMicrosoftNetCompilers>
   </PropertyGroup>
 </Project>
