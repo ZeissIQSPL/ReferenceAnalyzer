@@ -17,18 +17,25 @@ namespace ReferenceAnalyzer.Core.Tests
             _projectName = "project";
             _accessMock = new Mock<IProjectAccess>();
 
-            var projectFile = Path.Combine(TestsHelper.GetTestFilesLocation(), "ProjectAndPackageReferences.xml");
-            var content = File.ReadAllText(projectFile);
-            _accessMock.Setup(m => m.Read(_projectName))
-                .Returns(content);
+            SetupFile("ProjectAndPackageReferences.csproj", _projectName);
+            SetupFile("Project2.csproj", $@"{_projectName}\..\.\Project2.csproj");
+            SetupFile("Project3.csproj", $@"{_projectName}\..\.\Project3.csproj");
 
             _sut = new ReferencesEditor(_accessMock.Object);
+        }
+
+        private void SetupFile(string fileName, string projectPath)
+        {
+            var projectFile = Path.Combine(TestsHelper.GetTestFilesLocation(), fileName);
+            var content = File.ReadAllText(projectFile);
+            _accessMock.Setup(m => m.Read(projectPath))
+                .Returns(content);
         }
 
         [Fact]
         public void ProjectReferencesRetrieved()
         {
-            _sut.GetReferencedProjects(_projectName).Should().BeEquivalentTo("Project2");
+            _sut.GetReferencedProjects(_projectName).Should().BeEquivalentTo("Project2", "Project3Assembly");
         }
 
         [Fact]

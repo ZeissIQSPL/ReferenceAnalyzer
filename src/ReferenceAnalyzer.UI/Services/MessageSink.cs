@@ -20,7 +20,7 @@ namespace ReferenceAnalyzer.UI.Services
 
         public void Write(string message)
         {
-            _logs.Add(message);
+            //_logs.Add(message);
         }
 
         public ReadOnlyObservableCollection<string> Lines => _lines;

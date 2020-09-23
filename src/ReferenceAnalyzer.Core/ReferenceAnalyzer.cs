@@ -15,11 +15,11 @@ namespace ReferenceAnalyzer.Core
     {
         private readonly IMessageSink _messageSink;
         private readonly IReferencesEditor _editor;
-        private readonly XamlReferencesReader _xamlReferencesReader;
+        private readonly IXamlReferencesReader _xamlReferencesReader;
         private List<Project> _projects = new List<Project>();
 
         public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor,
-            XamlReferencesReader xamlReferencesReader)
+            IXamlReferencesReader xamlReferencesReader)
         {
             _messageSink = messageSink;
             _editor = editor;
@@ -107,20 +107,20 @@ namespace ReferenceAnalyzer.Core
 
             compilation = compilation!.AddReferences(assemblies);
 
-            //await using var dummy = new MemoryStream();
-            //var compilationResult = compilation.Emit(dummy);
+            await using var dummy = new MemoryStream();
+            var compilationResult = compilation.Emit(dummy);
 
-            //foreach (var d in compilationResult.Diagnostics)
-            //    _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
+            foreach (var d in compilationResult.Diagnostics)
+                _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
 
-            //if (ThrowOnCompilationFailures &&
-            //    compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
-            //{
-            //    var errors = compilationResult.Diagnostics
-            //        .Where(d => d.Severity == DiagnosticSeverity.Error)
-            //        .Select(d => d.GetMessage() + "\n");
-            //    throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
-            //}
+            if (ThrowOnCompilationFailures &&
+                compilationResult.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
+            {
+                var errors = compilationResult.Diagnostics
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .Select(d => d.GetMessage() + "\n");
+                throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
+            }
 
             var visitor = new ReferencesWalker(compilation);
 

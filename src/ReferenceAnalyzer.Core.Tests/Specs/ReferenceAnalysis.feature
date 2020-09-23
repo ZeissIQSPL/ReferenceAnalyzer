@@ -24,7 +24,6 @@ Scenario: Defined references
 
 Scenario: NuGet reference
     Given I have a solution nuget_references
-    And I enable NuGet analysis
     When I run analysis for Project1
     Then Only xunit.assert should be in actual references
     And nunit.framework should not be in actual references
@@ -37,7 +36,6 @@ Scenario: Analyzing all
 
 Scenario: Solution with CLR project
     Given I Disable throwing on errors
-    And I enable NuGet analysis
     And I have a solution solution_with_cpp_cli
     When I run analysis for Project1
     Then Only xunit.assert should be in actual references

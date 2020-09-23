@@ -6,7 +6,7 @@ using ReferenceAnalyzer.Core.ProjectEdit;
 
 namespace ReferenceAnalyzer.Core.Util
 {
-    public class XamlReferencesReader
+    public class XamlReferencesReader : IXamlReferencesReader
     {
         private readonly IProjectAccess _projectAccess;
 

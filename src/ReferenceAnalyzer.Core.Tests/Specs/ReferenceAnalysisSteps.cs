@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using ReferenceAnalyzer.Core.ProjectEdit;
+using ReferenceAnalyzer.Core.Util;
 using TechTalk.SpecFlow;
 
 namespace ReferenceAnalyzer.Core.Tests
@@ -32,7 +33,9 @@ namespace ReferenceAnalyzer.Core.Tests
             editor.Setup(m => m.GetReferencedProjects(It.IsAny<string>()))
                 .Returns(new [] {"Project2", "Project3"});
 
-            _sut = new ReferenceAnalyzer(sinkMock.Object, editor.Object);
+            var xamlReaderMock = new Mock<IXamlReferencesReader>();
+
+            _sut = new ReferenceAnalyzer(sinkMock.Object, editor.Object, xamlReaderMock.Object);
         }
 
         [Given(@"I have a solution (.*)")]
@@ -61,10 +64,6 @@ namespace ReferenceAnalyzer.Core.Tests
                 .Callback((double v) => _lastProgress = v);
             _sut.ProgressReporter = _progress.Object;
         }
-
-        [Given(@"I enable NuGet analysis")]
-        public void GivenIEnableNuGetAnalysis() => true;
-
 
         private static string GetTestSamplesLocation() =>
             Assembly.GetExecutingAssembly().CodeBase?.Split("src")[0] + "test_samples";

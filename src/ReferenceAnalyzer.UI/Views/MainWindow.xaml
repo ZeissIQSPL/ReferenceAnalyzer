@@ -33,7 +33,9 @@
                 <TextBlock Text="Whitelist"></TextBlock>
                 <TextBox Name="Whitelist"></TextBox>
             </StackPanel>
-            <ScrollViewer DockPanel.Dock="Bottom" Height="300" VerticalScrollBarVisibility="Visible">
+            <ScrollViewer DockPanel.Dock="Bottom" Height="300"
+                          VerticalScrollBarVisibility="Visible"
+                          HorizontalScrollBarVisibility="Disabled">
                 <TextBlock Name="Logs" TextWrapping="Wrap"/>
             </ScrollViewer>
             <ListBox Name="Projects" DockPanel.Dock="Bottom">

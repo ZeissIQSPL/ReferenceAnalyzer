@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -39,6 +40,9 @@ namespace ReferenceAnalyzer.UI.Tests
             {
                 _editor = new Mock<IReferencesEditor>();
                 _sinkMock = new Mock<IReadableMessageSink>();
+                _sinkMock.Setup(m => m.Lines)
+                    .Returns(new ReadOnlyObservableCollection<string>(new ObservableCollection<string>()));
+
                 _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object, _sinkMock.Object);
 
                 _receivedPopupMessage = null;
