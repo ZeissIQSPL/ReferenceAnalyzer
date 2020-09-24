@@ -5,7 +5,7 @@ namespace ReferenceAnalyzer.UI.Models
     public class Settings : ISettings
     {
         private const string SolutionPathKey = "SolutionPath";
-        private readonly System.Configuration.Configuration _settings;
+        private readonly Configuration _settings;
 
         public Settings() => _settings = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
