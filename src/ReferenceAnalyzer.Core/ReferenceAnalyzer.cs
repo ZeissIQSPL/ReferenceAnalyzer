@@ -122,17 +122,29 @@ namespace ReferenceAnalyzer.Core
                 throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
             }
 
-            var visitor = new ReferencesWalker(compilation);
+            var ignoreRules = new Func<string, bool>[]
+            {
+                name => name == project.AssemblyName,
+                name => name == "mscorlib",
+                name => name.StartsWith("System")
+            };
+            var visitor = new ReferencesWalker(compilation, ignoreRules);
 
-            foreach (var tree in compilation.SyntaxTrees)
-                visitor.Visit(await tree.GetRootAsync());
+            var treeAnalysis = new List<Task>(compilation.SyntaxTrees.Count());
+            var analysisTasks = compilation.SyntaxTrees
+                .Select(tree => Task.Run(async () => visitor.Visit(await tree.GetRootAsync())));
+            treeAnalysis.AddRange(analysisTasks);
+
+            await Task.WhenAll(treeAnalysis);
 
             var xamlFiles = Directory.GetParent(project.FilePath)
                 .GetFiles("*.xaml", SearchOption.AllDirectories)
                 .Select(f => Path.Combine(f.Directory.FullName, f.Name));
 
-
-            var xamlReferences = xamlFiles.SelectMany(f => _xamlReferencesReader.GetReferences(f));
+            var xamlReferences = xamlFiles
+                .SelectMany(f => _xamlReferencesReader.GetReferences(f))
+                .Distinct()
+                .Where(reference => ignoreRules.All(rule => !rule(reference)));
 
             var groupedAssemblies = visitor.Occurrences
                 .GroupBy(o => o.UsedType.ContainingAssembly)
