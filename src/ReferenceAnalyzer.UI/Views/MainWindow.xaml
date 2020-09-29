@@ -18,7 +18,15 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <DockPanel Grid.Column="0">
-            <TextBox Name="Path" DockPanel.Dock="Top" />
+            <Grid DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width ="3*"/>
+                    <ColumnDefinition Width ="1*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Name="Path" Grid.Column="0" />
+                <Button Name="PickSolutionLocation" Grid.Column="1">Pick</Button>
+            </Grid>
+            
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
             <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
             <Button Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>

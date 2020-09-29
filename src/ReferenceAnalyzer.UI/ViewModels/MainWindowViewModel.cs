@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -27,6 +28,13 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private string _whitelist;
 
         public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor, IReadableMessageSink messageSink)
+            : this(settings, analyzer, editor, messageSink, new SolutionFilepathPicker())
+        {
+
+        }
+
+        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor,
+            IReadableMessageSink messageSink, ISolutionFilepathPicker slnFilepathPicker)
         {
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
@@ -45,7 +53,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
             analyzer.ProgressReporter = new Progress<double>(p => Progress = p);
 
-            SetupCommands(analyzer, editor);
+            SetupCommands(analyzer, editor, slnFilepathPicker);
 
             SetupProperties(settings, analyzer);
 
@@ -54,7 +62,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
             MessageSink.Lines.ToObservableChangeSet()
                 .Select(_ => MessageSink.Lines)
                 .Subscribe(lines => Log = string.Join('\n', lines));
-        }
+        } 
 
         private void SetupProperties(ISettings settings, IReferenceAnalyzer projectProvider)
         {
@@ -68,13 +76,15 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedProjectReport)));
         }
 
-        private void SetupCommands(IReferenceAnalyzer projectProvider, IReferencesEditor editor)
+        private void SetupCommands(IReferenceAnalyzer projectProvider, IReferencesEditor editor, ISolutionFilepathPicker slnFilepathPicker)
         {
             SetupLoad(projectProvider);
 
             SetupAnalyze(projectProvider);
 
             SetupRemove(editor);
+
+            SetupPickSolutionFile(slnFilepathPicker);
         }
 
         private void SetupRemove(IReferencesEditor editor)
@@ -151,6 +161,25 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 Analyze.Execute(new[] {p}), canAnalyzeSelected);
         }
 
+
+        private void SetupPickSolutionFile(ISolutionFilepathPicker solutionFilepathPicker)
+        {
+            PickSolutionFile = ReactiveCommand.CreateFromTask(() => SelectFilepath(solutionFilepathPicker));
+
+            //PickSolutionFile = ReactiveCommand.CreateFromTask(() => Task.Run(async () =>  //new Task(async () => 
+            //{
+            //    var result = await solutionFilepathPicker.SelectSolutionFilePath();
+            //    Path = result;
+            //}));
+
+        }
+
+        private async Task SelectFilepath(ISolutionFilepathPicker solutionFilepathPicker)
+        {
+            var result = await solutionFilepathPicker.SelectSolutionFilePath();
+            Path = result;
+        }
+
         public ReactiveCommand<string, ReferencesReport> AnalyzeSelected { get; set; }
 
         public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
@@ -182,6 +211,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
 
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
+
+        public ReactiveCommand<Unit, Unit> PickSolutionFile { get; private set; }
 
         public double Progress
         {

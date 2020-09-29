@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
@@ -20,7 +21,6 @@ namespace ReferenceAnalyzer.UI.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-
 
             this.WhenActivated(disposableRegistration =>
             {
@@ -89,7 +89,7 @@ namespace ReferenceAnalyzer.UI.Views
         public Button RemoveAllUnusedCommand => this.FindControl<Button>(nameof(RemoveAllUnusedCommand));
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
         public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
-
+        public Button PickSolutionLocation => this.FindControl<Button>(nameof(PickSolutionLocation));
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {
@@ -147,6 +147,11 @@ namespace ReferenceAnalyzer.UI.Views
                     viewModel => viewModel.RemoveAllUnused,
                     view => view.RemoveAllUnusedCommand,
                     viewModel => viewModel.Reports)
+                .DisposeWith(disposableRegistration);
+
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.PickSolutionFile,                    
+                    view => view.PickSolutionLocation)
                 .DisposeWith(disposableRegistration);
         }
     }
