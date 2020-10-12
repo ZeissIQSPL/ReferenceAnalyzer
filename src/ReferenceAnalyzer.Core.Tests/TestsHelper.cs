@@ -8,7 +8,8 @@ namespace ReferenceAnalyzer.Core.Tests
     {
         public static string GetTestFilesLocation()
         {
-            var path =  Path.Combine(Assembly.GetExecutingAssembly().CodeBase.Split(new [] {"src"}, StringSplitOptions.RemoveEmptyEntries)[0],
+            var codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            var path = Path.Combine(codeBase.Split(new[] {"src"}, StringSplitOptions.RemoveEmptyEntries)[0],
                 "src",
                 "ReferenceAnalyzer.Core.Tests",
                 "TestFiles");

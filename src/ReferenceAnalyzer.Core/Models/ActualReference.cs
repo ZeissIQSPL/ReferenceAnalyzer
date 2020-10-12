@@ -14,16 +14,16 @@ namespace ReferenceAnalyzer.Core
         public IEnumerable<ReferenceOccurrence> Occurrences { get; }
         public string Target { get; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
             return obj.GetType() == GetType() && Equals((ActualReference)obj);
         }
 
-        public bool Equals(ActualReference other) => other != null && Target == other.Target;
+        public bool Equals(ActualReference? other) => other != null && Target == other.Target;
 
-        public override int GetHashCode() => Target != null ? Target.GetHashCode() : 0;
+        public override int GetHashCode() => Target.GetHashCode();
 
         public static bool operator ==(ActualReference left, ActualReference right) => Equals(left, right);
 
