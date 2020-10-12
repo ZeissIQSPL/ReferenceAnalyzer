@@ -69,7 +69,9 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
                 })
                 .Remove();
 
-            doc.Save(projectPath);
+            var sw = new StringWriter();
+            doc.Save(sw);
+            _projectAccess.Write(projectPath, sw.ToString());
         }
 
         private XName WithNamespace(XElement root, string name)

@@ -87,11 +87,67 @@ namespace ReferenceAnalyzer.Core
 
         private async Task<ReferencesReport> Analyze(Project project)
         {
-            var compilation = await project.GetCompilationAsync();
+            if (project.FilePath == null)
+                throw new InvalidOperationException("Attempted to analyze project without a disk path");
 
             var outputPath = Path.GetFullPath(Path.Combine(project.OutputFilePath!, ".."));
 
-            var referencedProjects = _editor.GetReferencedProjects(project.FilePath);
+            Compilation compilation = await GetCompilation(project, outputPath);
+
+            var ignoreRules = new Func<string, bool>[]
+            {
+                name => name == project.AssemblyName,
+                name => name == "mscorlib",
+                name => name.StartsWith("System")
+            };
+
+            var visitor = new ReferencesWalker(compilation, ignoreRules);
+
+            var treeAnalysis = new List<Task>(compilation.SyntaxTrees.Count());
+            var analysisTasks = compilation.SyntaxTrees
+                .Select(tree => Task.Run(async () => visitor.Visit(await tree.GetRootAsync())));
+            treeAnalysis.AddRange(analysisTasks);
+
+            await Task.WhenAll(treeAnalysis);
+
+            IEnumerable<string> xamlReferences = GetXamlReferences(project);
+            xamlReferences = xamlReferences
+                .Where(reference => ignoreRules.All(rule => !rule(reference)));
+
+            var groupedAssemblies = visitor.Occurrences
+                .GroupBy(o => o.UsedType.ContainingAssembly)
+                .Where(g => g.Key != null);
+
+            var actualReferences = groupedAssemblies
+                .Select(g => new ActualReference(g.Key.Name, g))
+                .Concat(xamlReferences
+                    .Select(r => new ActualReference(r, Enumerable.Empty<ReferenceOccurrence>())))
+                .Distinct()
+                .OrderBy(r => r.Target);
+
+
+            var definedReferences = _editor.GetReferencedProjects(project.FilePath)
+                .OrderBy(n => n);
+
+            return new ReferencesReport(project.Name, definedReferences, actualReferences, project.FilePath);
+        }
+
+        private IEnumerable<string> GetXamlReferences(Project project)
+        {
+            var xamlFiles = Directory.GetParent(project.FilePath)
+                .GetFiles("*.xaml", SearchOption.AllDirectories)
+                .Select(f => Path.Combine(f.Directory!.FullName, f.Name));
+
+            var xamlReferences = xamlFiles
+                .SelectMany(f => _xamlReferencesReader.GetReferences(f))
+                .Distinct();
+            return xamlReferences;
+        }
+
+        private async Task<Compilation> GetCompilation(Project project, string outputPath)
+        {
+            var compilation = await project.GetCompilationAsync();
+            var referencedProjects = _editor.GetReferencedProjects(project.FilePath!);
             var assemblies = referencedProjects
                 .Select(p =>
                 {
@@ -100,9 +156,9 @@ namespace ReferenceAnalyzer.Core
                         return dll;
                     var exe = Path.Combine(outputPath, p + ".exe");
 
-                    return File.Exists(exe) ? exe : null;
+                    return File.Exists(exe) ? exe : string.Empty;
                 })
-                .Where(f => f != null)
+                .Where(f => !string.IsNullOrEmpty(f))
                 .Select(f => MetadataReference.CreateFromFile(f));
 
             compilation = compilation!.AddReferences(assemblies);
@@ -122,46 +178,7 @@ namespace ReferenceAnalyzer.Core
                 throw new Exception($"Failed compiling {project.Name}: \n" + string.Concat(errors));
             }
 
-            var ignoreRules = new Func<string, bool>[]
-            {
-                name => name == project.AssemblyName,
-                name => name == "mscorlib",
-                name => name.StartsWith("System")
-            };
-            var visitor = new ReferencesWalker(compilation, ignoreRules);
-
-            var treeAnalysis = new List<Task>(compilation.SyntaxTrees.Count());
-            var analysisTasks = compilation.SyntaxTrees
-                .Select(tree => Task.Run(async () => visitor.Visit(await tree.GetRootAsync())));
-            treeAnalysis.AddRange(analysisTasks);
-
-            await Task.WhenAll(treeAnalysis);
-
-            var xamlFiles = Directory.GetParent(project.FilePath)
-                .GetFiles("*.xaml", SearchOption.AllDirectories)
-                .Select(f => Path.Combine(f.Directory.FullName, f.Name));
-
-            var xamlReferences = xamlFiles
-                .SelectMany(f => _xamlReferencesReader.GetReferences(f))
-                .Distinct()
-                .Where(reference => ignoreRules.All(rule => !rule(reference)));
-
-            var groupedAssemblies = visitor.Occurrences
-                .GroupBy(o => o.UsedType.ContainingAssembly)
-                .Where(g => g.Key != null);
-
-            var actualReferences = groupedAssemblies
-                .Select(g => new ActualReference(g.Key.Name, g))
-                .Concat(xamlReferences
-                    .Select(r => new ActualReference(r, Enumerable.Empty<ReferenceOccurrence>())))
-                .Distinct()
-                .OrderBy(r => r.Target);
-
-
-            var definedReferences = _editor.GetReferencedProjects(project.FilePath)
-                .OrderBy(n => n);
-
-            return new ReferencesReport(project.Name, definedReferences, actualReferences, project.FilePath);
+            return compilation;
         }
 
         public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()
