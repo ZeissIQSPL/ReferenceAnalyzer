@@ -42,7 +42,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 throw new ArgumentNullException(nameof(settings));
             if (analyzer == null)
                 throw new ArgumentNullException(nameof(analyzer));
-
             analyzer.BuildProperties = new Dictionary<string, string>
             {
                 {"AlwaysCompileMarkupFilesInSeparateDomain", "false"},
@@ -59,6 +58,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
             SetupProperties(settings, analyzer);
 
+
             MessageSink = messageSink;
 
             MessageSink.Lines.ToObservableChangeSet()
@@ -68,8 +68,17 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         private void SetupProperties(ISettings settings, IReferenceAnalyzer projectProvider)
         {
+            var solutions = new SourceList<string>();
+            settings.LastLoadedSolutions.Subscribe(Observer.Create<string>(o => solutions.Add(o)));
+            solutions.Connect().Bind(out _lastSolutions).Subscribe();
+
+
             this.WhenAnyValue(viewModel => viewModel.Path)
-                .Subscribe(x => settings.SolutionPath = x);
+                .Subscribe(x => { settings.SolutionPath = x; solutions.Add(x); });
+                    
+                  
+
+            _lastSolutions.Subscribe(Observer.Create<string>(x => Console.WriteLine(x.ToString())));
 
             this.WhenAnyValue(viewModel => viewModel.StopOnError)
                 .Subscribe(x => projectProvider.ThrowOnCompilationFailures = x);
@@ -87,6 +96,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
             SetupRemove(editor);
 
             SetupPickSolutionFile(slnFilepathPicker);
+
         }
 
         private void SetupRemove(IReferencesEditor editor)
@@ -136,6 +146,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe();
         }
 
+
+
         private void SetupAnalyze(IReferenceAnalyzer projectProvider)
         {
             var canAnalyze = Projects.ToObservableChangeSet()
@@ -167,13 +179,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private void SetupPickSolutionFile(ISolutionFilepathPicker solutionFilepathPicker)
         {
             PickSolutionFile = ReactiveCommand.CreateFromTask(() => SelectFilepath(solutionFilepathPicker));
-
-            //PickSolutionFile = ReactiveCommand.CreateFromTask(() => Task.Run(async () =>  //new Task(async () => 
-            //{
-            //    var result = await solutionFilepathPicker.SelectSolutionFilePath();
-            //    Path = result;
-            //}));
-
         }
 
         private async Task SelectFilepath(ISolutionFilepathPicker solutionFilepathPicker)

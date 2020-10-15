@@ -94,7 +94,8 @@ namespace ReferenceAnalyzer.UI.Views
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {
-            this.Bind(ViewModel, viewModel => viewModel.SelectedProject,
+            this.Bind(ViewModel,
+                    viewModel => viewModel.SelectedProject,
                     view => view.Projects.SelectedItem)
                 .DisposeWith(disposableRegistration);
 
@@ -119,8 +120,8 @@ namespace ReferenceAnalyzer.UI.Views
                 .DisposeWith(disposableRegistration);
 
             this.OneWayBind(ViewModel,
-                viewModel => viewModel.LastSolutions,
-                view => view.LastLoadedSolutions.Items)
+                    viewModel => viewModel.LastSolutions,
+                    view => view.LastLoadedSolutions.Items)
                 .DisposeWith(disposableRegistration);
         }
 

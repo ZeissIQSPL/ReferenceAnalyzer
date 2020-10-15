@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Reactive;
 
 namespace ReferenceAnalyzer.UI.Models
 {
@@ -8,5 +10,7 @@ namespace ReferenceAnalyzer.UI.Models
         string SolutionPath { get; set; }
 
         IImmutableList<string> LastLoadedSolutions { get; set; }
+
+        IObservable<Unit> Xd { get; }
     }
 }
