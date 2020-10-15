@@ -32,8 +32,8 @@ namespace ReferenceAnalyzer.Core
 
         public override string ToString() => Project;
 
-        public static ReferencesReport Empty(string project) =>
-            new ReferencesReport(project,
+        public static ReferencesReport Empty() =>
+            new ReferencesReport("empty report",
                 Enumerable.Empty<string>(),
                 Enumerable.Empty<ActualReference>(),
                 "");

@@ -11,10 +11,12 @@ namespace ReferenceAnalyzer.Core
     public class ReferencesWalker : CSharpSyntaxWalker
     {
         private readonly Compilation _compilation;
+        private readonly IEnumerable<Func<string, bool>> _ignoreRules;
 
-        public ReferencesWalker(Compilation compilation)
+        public ReferencesWalker(Compilation compilation, IEnumerable<Func<string, bool>> ignoreRules)
         {
             _compilation = compilation;
+            _ignoreRules = ignoreRules;
         }
 
         public ConcurrentBag<ReferenceOccurrence> Occurrences { get; } = new ConcurrentBag<ReferenceOccurrence>();
@@ -47,60 +49,52 @@ namespace ReferenceAnalyzer.Core
 
             var model = _compilation.GetSemanticModel(node.SyntaxTree);
 
-            var syntaxNodes = node.DescendantNodesAndSelf().Where(d => !d.DescendantNodes().Any());
+            var syntaxNodes = node.DescendantNodesAndSelf()
+                .Where(d => !d.DescendantNodes().Any());
+
             foreach (var d in syntaxNodes)
+                AnalyzeNode(model, d);
+        }
+
+        private void AnalyzeNode(SemanticModel model, SyntaxNode node)
+        {
+            var invokedSymbol = model.GetSymbolInfo(node).Symbol ??
+                                model.GetSymbolInfo(node).CandidateSymbols.FirstOrDefault();
+
+            AddOverloads(model, node);
+
+            var type = invokedSymbol switch
             {
-                var invokedSymbol = model.GetSymbolInfo(d).Symbol ??
-                                    model.GetSymbolInfo(d).CandidateSymbols.FirstOrDefault();
+                IMethodSymbol methodSymbol => methodSymbol.ReturnType,
+                IPropertySymbol propertySymbol => propertySymbol.Type,
+                ITypeSymbol typeSymbol => typeSymbol,
+                _ => null
+            };
 
-                //method overloads handling
-                if (model.GetMemberGroup(d).Length > 1)
-                {
-                    foreach (var symbol in model.GetMemberGroup(d))
-                    {
-                        var m = (IMethodSymbol) symbol;
-                        foreach (var p in m.Parameters)
-                        {
-                            Occurrences.Add(new ReferenceOccurrence(p.Type, new ReferenceLocation()));
-                        }
-                    }
-                }
+            if (type != null)
+            {
+                AddOccurrence(type);
+                AddDependentTypes(type);
+            }
 
-                if (invokedSymbol is IMethodSymbol methodSymbol)
-                {
-                    Occurrences.Add(new ReferenceOccurrence(methodSymbol.ReturnType, new ReferenceLocation()));
+            if (invokedSymbol?.ContainingType != null)
+            {
+                AddOccurrence(invokedSymbol.ContainingType);
+                AddDependentTypes(invokedSymbol.ContainingType);
+            }
+        }
 
-                    AddDependentTypes(methodSymbol.ReturnType);
-                }
+        private void AddOverloads(SemanticModel model, SyntaxNode node)
+        {
+            var symbols = model.GetMemberGroup(node);
+            if (symbols.Length > 1)
+            {
+                var parameters = symbols
+                    .Cast<IMethodSymbol>()
+                    .SelectMany(m => m.Parameters);
 
-                if (invokedSymbol is IPropertySymbol propertySymbol)
-                {
-                    Occurrences.Add(new ReferenceOccurrence(propertySymbol.Type, new ReferenceLocation()));
-
-                    AddDependentTypes(propertySymbol.Type);
-                }
-
-                if (invokedSymbol != null)
-                {
-                    ITypeSymbol? addedType = null;
-
-                    if (invokedSymbol is ITypeSymbol type)
-                    {
-                        Occurrences.Add(new ReferenceOccurrence(type, new ReferenceLocation()));
-                        addedType = type;
-                    }
-
-                    if (invokedSymbol.ContainingType != null)
-                    {
-                        Occurrences.Add(new ReferenceOccurrence(invokedSymbol.ContainingType, new ReferenceLocation()));
-                        addedType = invokedSymbol.ContainingType;
-                    }
-
-                    if (addedType != null)
-                    {
-                        AddDependentTypes(addedType);
-                    }
-                }
+                foreach (IParameterSymbol p in parameters)
+                    AddOccurrence(p.Type);
             }
         }
 
@@ -110,21 +104,22 @@ namespace ReferenceAnalyzer.Core
 
             while (current != null)
             {
-                Occurrences.Add(new ReferenceOccurrence(current, new ReferenceLocation()));
+                AddOccurrence(current);
                 current = current.BaseType;
             }
 
             foreach (var @interface in addedType.AllInterfaces)
-            {
-                Occurrences.Add(new ReferenceOccurrence(@interface, new ReferenceLocation()));
-            }
+                AddOccurrence(@interface);
 
             if (addedType is INamedTypeSymbol namedType)
-
                 foreach (var arg in namedType.TypeArguments)
-                {
-                    Occurrences.Add(new ReferenceOccurrence(arg, new ReferenceLocation()));
-                }
+                    AddOccurrence(arg);
+        }
+
+        private void AddOccurrence(ITypeSymbol current)
+        {
+            if (current.ContainingAssembly != null && _ignoreRules.All(rule => !rule(current.ContainingAssembly.Name)))
+                Occurrences.Add(new ReferenceOccurrence(current, new ReferenceLocation()));
         }
     }
 }

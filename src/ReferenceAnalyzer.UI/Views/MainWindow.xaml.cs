@@ -39,7 +39,8 @@ namespace ReferenceAnalyzer.UI.Views
                 ViewModel.MessagePopup
                     .RegisterHandler(interaction =>
                     {
-                        var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandardWindow("warning", interaction.Input);
+                        var messageBoxStandardWindow =
+                            MessageBoxManager.GetMessageBoxStandardWindow("warning", interaction.Input);
                         messageBoxStandardWindow.Show();
                         interaction.SetOutput(Unit.Default);
                     });
@@ -84,7 +85,6 @@ namespace ReferenceAnalyzer.UI.Views
         public Button AnalyzeAllCommand => this.FindControl<Button>(nameof(AnalyzeAllCommand));
         public Button AnalyzeSelectedCommand => this.FindControl<Button>(nameof(AnalyzeSelectedCommand));
         public ProgressBar Progress => this.FindControl<ProgressBar>(nameof(Progress));
-        public CheckBox IncludeNuGets => this.FindControl<CheckBox>(nameof(IncludeNuGets));
         public Button RemoveUnusedCommand => this.FindControl<Button>(nameof(RemoveUnusedCommand));
         public Button RemoveAllUnusedCommand => this.FindControl<Button>(nameof(RemoveAllUnusedCommand));
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));

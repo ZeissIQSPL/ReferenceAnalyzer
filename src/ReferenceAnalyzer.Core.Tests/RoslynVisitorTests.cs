@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace ReferenceAnalyzer.Core.Tests
 
             var tree = CSharpSyntaxTree.ParseText(text);
             _compilation = CSharpCompilation.Create("TestCompilation", new[] { tree });
-            _sut =  new ReferencesWalker(_compilation);
+            _sut =  new ReferencesWalker(_compilation, new Func<string, bool>[]{});
         }
 
         [Theory]
