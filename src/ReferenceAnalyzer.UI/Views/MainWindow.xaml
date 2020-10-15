@@ -26,7 +26,13 @@
                 <TextBox Name="Path" Grid.Column="0" />
                 <Button Name="PickSolutionLocation" Grid.Column="1">Pick</Button>
             </Grid>
-            
+            <ListBox Name="LastLoadedSolutions" DockPanel.Dock="Top">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
             <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
             <Button Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>

@@ -20,6 +20,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
     {
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
+        private ReadOnlyObservableCollection<string> _lastSolutions;
         private string _path;
         private bool _stopOnError = false;
         private string _selectedProject;
@@ -202,6 +203,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public ReadOnlyObservableCollection<ReferencesReport> Reports => _reports;
         public ReadOnlyObservableCollection<string> Projects => _projects;
 
+        public ReadOnlyObservableCollection<string> LastSolutions => _lastSolutions;
+
         public ReactiveCommand<Unit, IEnumerable<string>> Load { get; private set; }
 
         public bool StopOnError
@@ -236,6 +239,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
             get => _whitelist;
             set => this.RaiseAndSetIfChanged(ref _whitelist, value);
         }
+
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer projectProvider) => await projectProvider.Load(Path);
 
