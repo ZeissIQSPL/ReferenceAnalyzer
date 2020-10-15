@@ -14,6 +14,7 @@ using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.UI.Services;
 
+
 namespace ReferenceAnalyzer.UI.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
@@ -192,7 +193,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
 
         public ReferencesReport SelectedProjectReport =>
-            Reports.FirstOrDefault(r => r.Project == SelectedProject) ?? ReferencesReport.Empty(SelectedProject);
+            Reports.FirstOrDefault(r => r.Project == SelectedProject) ?? ReferencesReport.Empty();
 
         public string SelectedProject
         {
