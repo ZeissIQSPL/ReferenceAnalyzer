@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Configuration;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 using System.Text.Json;
 using Microsoft.VisualBasic;
 
@@ -12,16 +15,22 @@ namespace ReferenceAnalyzer.UI.Models
         private const string SolutionPathKey = "SolutionPath";
         private const string LastSolutionsKey = "LastSolutions";
         private readonly System.Configuration.Configuration _settings;
+        private readonly Subject<Unit> _xd = new Subject<Unit>();
 
-        public Settings() => _settings = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+        public Settings() {
+            _settings = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            //_settings.AppSettings.Settings[SolutionPathKey].Value = null;
 
+        }
+
+        public IObservable<Unit> Xd => _xd;
         public string SolutionPath
         {
             get => _settings.AppSettings.Settings[SolutionPathKey]?.Value;
             set
             {
                 var settings = _settings.AppSettings.Settings;
-                if (settings[SolutionPathKey] == null)
+                if (settings[SolutionPathKey]?.Value == null)
                 {
                     settings.Add(SolutionPathKey, value);
                 }
@@ -37,18 +46,24 @@ namespace ReferenceAnalyzer.UI.Models
             }
         }
 
+
+
         public IImmutableList<string> LastLoadedSolutions {
             get {
-                var serializedJson = _settings.AppSettings.Settings[SolutionPathKey]?.Value;
-                return serializedJson == null ? JsonSerializer.Deserialize<IImmutableList<string>>(serializedJson) : ImmutableList.Create<string>();
+                var serializedJson = _settings.AppSettings.Settings[LastSolutionsKey]?.Value;
+                return !string.IsNullOrEmpty(serializedJson) ? JsonSerializer.Deserialize<IImmutableList<string>>(serializedJson) : ImmutableList.Create<string>();
             }
-            set  {
+            set {
                 var settings = _settings.AppSettings.Settings;
-                if (settings[LastSolutionsKey] == null)
+                if (settings[LastSolutionsKey]?.Value == null)
                     settings.Add(LastSolutionsKey, JsonSerializer.Serialize(value));
                 else
+                {
                     settings[LastSolutionsKey].Value = JsonSerializer.Serialize(value);
+                }
+                    
                 _settings.Save(ConfigurationSaveMode.Modified);
+                _xd.OnNext(Unit.Default);
                 }
             }
     }
