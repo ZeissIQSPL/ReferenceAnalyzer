@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
@@ -21,7 +22,6 @@ namespace ReferenceAnalyzer.UI.Views
         {
             AvaloniaXamlLoader.Load(this);
 
-
             this.WhenActivated(disposableRegistration =>
             {
                 this.Bind(ViewModel,
@@ -39,8 +39,7 @@ namespace ReferenceAnalyzer.UI.Views
                 ViewModel.MessagePopup
                     .RegisterHandler(interaction =>
                     {
-                        var messageBoxStandardWindow =
-                            MessageBoxManager.GetMessageBoxStandardWindow("warning", interaction.Input);
+                        var messageBoxStandardWindow = MessageBoxManager.GetMessageBoxStandardWindow("warning", interaction.Input);
                         messageBoxStandardWindow.Show();
                         interaction.SetOutput(Unit.Default);
                     });
@@ -89,11 +88,13 @@ namespace ReferenceAnalyzer.UI.Views
         public Button RemoveAllUnusedCommand => this.FindControl<Button>(nameof(RemoveAllUnusedCommand));
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
         public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
-
+        public Button PickSolutionLocation => this.FindControl<Button>(nameof(PickSolutionLocation));
+        public ListBox LastLoadedSolutions => this.FindControl<ListBox>(nameof(LastLoadedSolutions));
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {
-            this.Bind(ViewModel, viewModel => viewModel.SelectedProject,
+            this.Bind(ViewModel,
+                    viewModel => viewModel.SelectedProject,
                     view => view.Projects.SelectedItem)
                 .DisposeWith(disposableRegistration);
 
@@ -115,6 +116,11 @@ namespace ReferenceAnalyzer.UI.Views
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.SelectedProjectReport.DiffReferences,
                     view => view.DiffReferences.Items)
+                .DisposeWith(disposableRegistration);
+
+            this.OneWayBind(ViewModel,
+                    viewModel => viewModel.LastSolutions,
+                    view => view.LastLoadedSolutions.Items)
                 .DisposeWith(disposableRegistration);
         }
 
@@ -147,6 +153,11 @@ namespace ReferenceAnalyzer.UI.Views
                     viewModel => viewModel.RemoveAllUnused,
                     view => view.RemoveAllUnusedCommand,
                     viewModel => viewModel.Reports)
+                .DisposeWith(disposableRegistration);
+
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.PickSolutionFile,                    
+                    view => view.PickSolutionLocation)
                 .DisposeWith(disposableRegistration);
         }
     }
