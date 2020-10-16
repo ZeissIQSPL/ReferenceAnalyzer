@@ -34,6 +34,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
+            <Button Name="CancelCommand" DockPanel.Dock="Top">Cancel</Button>
             <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
             <Button Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>
             <Button Name="RemoveUnusedCommand" DockPanel.Dock="Top">Remove unused</Button>
