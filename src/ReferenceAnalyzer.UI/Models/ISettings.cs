@@ -11,6 +11,5 @@ namespace ReferenceAnalyzer.UI.Models
 
         IImmutableList<string> LastLoadedSolutions { get; set; }
 
-        IObservable<Unit> Xd { get; }
     }
 }

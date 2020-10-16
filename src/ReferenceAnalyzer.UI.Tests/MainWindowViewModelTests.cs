@@ -39,10 +39,10 @@ namespace ReferenceAnalyzer.UI.Tests
 
             new TestScheduler().With(scheduler =>
             {
-            _editor = new Mock<IReferencesEditor>();
-            _sinkMock = new Mock<IReadableMessageSink>();
-            _slnFilepathPicker = new Mock<ISolutionFilepathPicker>();
-            _settingsMock.Setup(x => x.LastLoadedSolutions).Returns(ImmutableList.Create<string>());
+                _editor = new Mock<IReferencesEditor>();
+                _sinkMock = new Mock<IReadableMessageSink>();
+                _slnFilepathPicker = new Mock<ISolutionFilepathPicker>();
+                _settingsMock.Setup(x => x.LastLoadedSolutions).Returns(ImmutableList.Create<string>());
                 _sinkMock.Setup(m => m.Lines)
                     .Returns(new ReadOnlyObservableCollection<string>(new ObservableCollection<string>()));
 

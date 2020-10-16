@@ -19,11 +19,8 @@ namespace ReferenceAnalyzer.UI.Models
 
         public Settings() {
             _settings = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            //_settings.AppSettings.Settings[SolutionPathKey].Value = null;
-
         }
 
-        public IObservable<Unit> Xd => _xd;
         public string SolutionPath
         {
             get => _settings.AppSettings.Settings[SolutionPathKey]?.Value;
@@ -48,12 +45,15 @@ namespace ReferenceAnalyzer.UI.Models
 
 
 
-        public IImmutableList<string> LastLoadedSolutions {
-            get {
+        public IImmutableList<string> LastLoadedSolutions
+        {
+            get
+            {
                 var serializedJson = _settings.AppSettings.Settings[LastSolutionsKey]?.Value;
                 return !string.IsNullOrEmpty(serializedJson) ? JsonSerializer.Deserialize<IImmutableList<string>>(serializedJson) : ImmutableList.Create<string>();
             }
-            set {
+            set
+            {
                 var settings = _settings.AppSettings.Settings;
                 if (settings[LastSolutionsKey]?.Value == null)
                     settings.Add(LastSolutionsKey, JsonSerializer.Serialize(value));
@@ -64,7 +64,7 @@ namespace ReferenceAnalyzer.UI.Models
                     
                 _settings.Save(ConfigurationSaveMode.Modified);
                 _xd.OnNext(Unit.Default);
-                }
             }
+        }
     }
 }
