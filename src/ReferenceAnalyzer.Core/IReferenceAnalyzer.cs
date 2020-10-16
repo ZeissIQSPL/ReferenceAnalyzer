@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReferenceAnalyzer.Core
@@ -14,5 +15,11 @@ namespace ReferenceAnalyzer.Core
         Task<IEnumerable<string>> Load(string solution);
         IAsyncEnumerable<ReferencesReport> AnalyzeAll();
         IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects);
+
+        IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath, CancellationToken token);
+        Task<ReferencesReport> Analyze(string target, CancellationToken token);
+        Task<IEnumerable<string>> Load(string solution, CancellationToken token);
+        IAsyncEnumerable<ReferencesReport> AnalyzeAll(CancellationToken token);
+        IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects, CancellationToken token);
     }
 }

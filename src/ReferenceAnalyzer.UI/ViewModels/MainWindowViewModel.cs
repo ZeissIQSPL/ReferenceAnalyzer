@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DynamicData;
 using DynamicData.Binding;
@@ -25,6 +26,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private double _progress;
         private string _log;
         private string _whitelist;
+        private CancellationTokenSource _tokenSource;
 
         public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor, IReadableMessageSink messageSink)
         {
@@ -36,6 +38,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 throw new ArgumentNullException(nameof(editor));
             if (messageSink == null)
                 throw new ArgumentNullException(nameof(messageSink));
+
+            _tokenSource = new CancellationTokenSource();
 
             ConfigureAnalyzer(analyzer);
             SetupSettings(settings);
@@ -50,6 +54,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public ReadOnlyObservableCollection<string> Projects => _projects;
 
         public ReactiveCommand<Unit, IEnumerable<string>> Load { get; private set; }
+        public ReactiveCommand<Unit, Unit> Cancel { get; private set; }
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
         public ReactiveCommand<string, ReferencesReport> AnalyzeSelected { get; set; }
         public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
@@ -140,6 +145,12 @@ namespace ReferenceAnalyzer.UI.ViewModels
             SetupLoad(projectProvider);
             SetupAnalyze(projectProvider);
             SetupRemove(editor);
+
+            Cancel = ReactiveCommand.Create(() =>
+            {
+                _tokenSource.Cancel();
+                _tokenSource = new CancellationTokenSource();
+            });
         }
 
         private void SetupLoad(IReferenceAnalyzer projectProvider)
@@ -152,7 +163,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 canLoad);
 
             Load.ThrownExceptions
-                .Subscribe(async error => await MessagePopup.Handle(error.Message));
+                .Subscribe(HandleCommandExceptions);
 
             var projects = new SourceList<string>();
 
@@ -164,6 +175,14 @@ namespace ReferenceAnalyzer.UI.ViewModels
             projects.Connect()
                 .Bind(out _projects)
                 .Subscribe();
+        }
+
+        private async void HandleCommandExceptions(Exception error)
+        {
+            if (error is OperationCanceledException)
+                return;
+
+            await MessagePopup.Handle(error.Message);
         }
 
         private void SetupAnalyze(IReferenceAnalyzer analyzer)
@@ -182,6 +201,9 @@ namespace ReferenceAnalyzer.UI.ViewModels
             Analyze.IsExecuting
                 .Where(e => e)
                 .Subscribe(_ => reports.Clear());
+
+            Analyze.ThrownExceptions
+                .Subscribe(HandleCommandExceptions);
 
             reports.Connect()
                 .Bind(out _reports)
@@ -219,13 +241,13 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer analyzer) =>
-            await analyzer.Load(Path);
+            await analyzer.Load(Path, _tokenSource.Token);
 
-        private static async Task AnalyzeReferences(IReferenceAnalyzer analyzer,
+        private async Task AnalyzeReferences(IReferenceAnalyzer analyzer,
             IObserver<ReferencesReport> observer,
             IEnumerable<string> projects)
         {
-            await foreach (var element in analyzer.Analyze(projects))
+            await foreach (var element in analyzer.Analyze(projects, _tokenSource.Token))
                 observer.OnNext(element);
             observer.OnCompleted();
         }
