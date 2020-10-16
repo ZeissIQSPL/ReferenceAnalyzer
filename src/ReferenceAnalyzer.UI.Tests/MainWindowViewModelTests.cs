@@ -15,6 +15,7 @@ using ReferenceAnalyzer.Core.Util;
 using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
+using System.Collections.Immutable;
 
 namespace ReferenceAnalyzer.UI.Tests
 {
@@ -29,7 +30,7 @@ namespace ReferenceAnalyzer.UI.Tests
         private string _receivedPopupMessage;
         private Mock<IReferencesEditor> _editor;
         private Mock<IReadableMessageSink> _sinkMock;
-
+        private Mock<ISolutionFilepathPicker> _slnFilepathPicker;
         public MainWindowViewModelTests()
         {
             SetupAnalyzer();
@@ -38,12 +39,15 @@ namespace ReferenceAnalyzer.UI.Tests
 
             new TestScheduler().With(scheduler =>
             {
-                _editor = new Mock<IReferencesEditor>();
-                _sinkMock = new Mock<IReadableMessageSink>();
+            _editor = new Mock<IReferencesEditor>();
+            _sinkMock = new Mock<IReadableMessageSink>();
+            _slnFilepathPicker = new Mock<ISolutionFilepathPicker>();
+            _settingsMock.Setup(x => x.LastLoadedSolutions).Returns(ImmutableList.Create<string>());
                 _sinkMock.Setup(m => m.Lines)
                     .Returns(new ReadOnlyObservableCollection<string>(new ObservableCollection<string>()));
 
-                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object, _sinkMock.Object);
+                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object,
+                    _editor.Object, _sinkMock.Object, _slnFilepathPicker.Object);
 
                 _receivedPopupMessage = null;
                 _sut.MessagePopup
