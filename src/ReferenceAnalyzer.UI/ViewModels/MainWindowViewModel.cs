@@ -15,7 +15,7 @@ using ReferenceAnalyzer.UI.Services;
 
 namespace ReferenceAnalyzer.UI.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ReactiveObject
     {
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
