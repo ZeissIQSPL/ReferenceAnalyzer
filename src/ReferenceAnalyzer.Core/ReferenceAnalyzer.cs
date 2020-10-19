@@ -130,14 +130,18 @@ namespace ReferenceAnalyzer.Core
             xamlReferences = xamlReferences
                 .Where(reference => ignoreRules.All(rule => !rule(reference)));
 
-            var groupedAssemblies = visitor.Occurrences.AsParallel()
+            var groupedAssemblies = visitor.Occurrences
+                .AsParallel()
+                .WithCancellation(token)
                 .GroupBy(o => o.UsedType.ContainingAssembly)
                 .Where(g => g.Key != null);
 
 
             var actualReferences = groupedAssemblies
                 .Select(g => new ActualReference(g.Key.Name, g))
-                .Concat(xamlReferences.AsParallel()
+                .Concat(xamlReferences
+                    .AsParallel()
+                    .WithCancellation(token)
                     .Select(r => new ActualReference(r, Enumerable.Empty<ReferenceOccurrence>())))
                 .Distinct()
                 .OrderBy(r => r.Target)
