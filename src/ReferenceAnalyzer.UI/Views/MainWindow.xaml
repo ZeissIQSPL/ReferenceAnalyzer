@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ReferenceAnalyzer.Core;assembly=ReferenceAnalyzer.Core"
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        xmlns:views="clr-namespace:ReferenceAnalyzer.UI.Views;assembly=ReferenceAnalyzer.UI"
         mc:Ignorable="d" Width="1600" Height="900"
         x:Class="ReferenceAnalyzer.UI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
@@ -18,21 +19,8 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <DockPanel Grid.Column="0">
-            <Grid DockPanel.Dock="Top">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width ="3*"/>
-                    <ColumnDefinition Width ="1*"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Name="Path" Grid.Column="0" />
-                <Button Name="PickSolutionLocation" Grid.Column="1">Pick</Button>
-            </Grid>
-            <ListBox Name="LastLoadedSolutions" DockPanel.Dock="Top">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}"/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <views:SolutionView Name="Partial_SolutionView" DockPanel.Dock="Top" />
+            <!---->
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
             <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
             <Button Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>

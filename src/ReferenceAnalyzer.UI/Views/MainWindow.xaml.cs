@@ -25,6 +25,11 @@ namespace ReferenceAnalyzer.UI.Views
             this.WhenActivated(disposableRegistration =>
             {
                 this.Bind(ViewModel,
+                    viewModel => viewModel.SolutionViewModel,
+                    view => view.Partial_SolutionView.ViewModel)
+                .DisposeWith(disposableRegistration);
+
+                this.Bind(ViewModel,
                         viewModel => viewModel.Path,
                         view => view.Path.Text)
                     .DisposeWith(disposableRegistration);
@@ -90,6 +95,9 @@ namespace ReferenceAnalyzer.UI.Views
         public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
         public Button PickSolutionLocation => this.FindControl<Button>(nameof(PickSolutionLocation));
         public ListBox LastLoadedSolutions => this.FindControl<ListBox>(nameof(LastLoadedSolutions));
+
+        public ReactiveUserControl<SolutionViewModel> Partial_SolutionView =>
+            this.FindControl<ReactiveUserControl<SolutionViewModel>>(nameof(Partial_SolutionView));
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {

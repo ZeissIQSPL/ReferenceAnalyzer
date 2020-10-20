@@ -20,7 +20,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
         private ReadOnlyObservableCollection<string> _lastSolutions;
-        private string _path;
         private bool _stopOnError;
         private string _selectedProject;
         private double _progress;
@@ -35,6 +34,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor,
                 IReadableMessageSink messageSink, ISolutionFilepathPicker solutionFilepathPicker)
         {
+            SolutionViewModel = new SolutionViewModel();
+
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
             if (analyzer == null)
@@ -66,11 +67,8 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
 
-        public string Path
-        {
-            get => _path;
-            set => this.RaiseAndSetIfChanged(ref _path, value);
-        }
+        public string Path { get { return SolutionViewModel.Path; } set { } }
+        public SolutionViewModel SolutionViewModel { get; }
 
         public ReferencesReport SelectedProjectReport =>
             Reports.FirstOrDefault(r => r.Project == SelectedProject) ?? ReferencesReport.Empty();
@@ -129,9 +127,9 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         private void SetupSettings(ISettings settings)
         {
-            _path = settings.SolutionPath;
+            //_path = settings.SolutionPath;
 
-            this.WhenAnyValue(viewModel => viewModel.Path)
+            this.WhenAnyValue(viewModel => viewModel.SolutionViewModel.Path)
                 .Subscribe(x => settings.SolutionPath = x);
         }
 
@@ -141,7 +139,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
             settings.LastLoadedSolutions.Subscribe(Observer.Create<string>(o => solutions.Add(o)));
             solutions.Connect().Bind(out _lastSolutions).Subscribe();
 
-            this.WhenAnyValue(viewModel => viewModel.Path)
+            this.WhenAnyValue(viewModel => viewModel.SolutionViewModel.Path)
                 .Subscribe(x => { settings.SolutionPath = x; solutions.Add(x); });
 
 
@@ -163,7 +161,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         private void SetupLoad(IReferenceAnalyzer projectProvider)
         {
-            var canLoad = this.WhenAnyValue(x => x.Path,
+            var canLoad = this.WhenAnyValue(x => x.SolutionViewModel.Path,
                 path => !string.IsNullOrEmpty(path));
 
             Load = ReactiveCommand.CreateFromTask(() =>
@@ -238,7 +236,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private async Task SelectFilepath(ISolutionFilepathPicker solutionFilepathPicker)
         {
             var result = await solutionFilepathPicker.SelectSolutionFilePath();
-            Path = result;
+            SolutionViewModel.Path = result;
         }
 
         private Task<Unit> RemoveReferences(ReferencesReport report, IReferencesEditor editor)
@@ -249,7 +247,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer analyzer) =>
-            await analyzer.Load(Path);
+            await analyzer.Load(SolutionViewModel.Path);
 
         private static async Task AnalyzeReferences(IReferenceAnalyzer analyzer,
             IObserver<ReferencesReport> observer,
