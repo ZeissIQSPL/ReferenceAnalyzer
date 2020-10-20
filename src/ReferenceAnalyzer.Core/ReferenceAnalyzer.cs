@@ -141,7 +141,6 @@ namespace ReferenceAnalyzer.Core
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .Concat(xamlReferences
                     .AsParallel()
-                    .WithCancellation(token)
                     .Select(r => new ActualReference(r, Enumerable.Empty<ReferenceOccurrence>())))
                 .Distinct()
                 .OrderBy(r => r.Target)
@@ -232,19 +231,10 @@ namespace ReferenceAnalyzer.Core
             var totalProjects = projects.Count();
             ProgressReporter.Report(-1);
 
-            var tasks = new List<Task<ReferencesReport>>();
-
             foreach (var project in projects)
             {
-                var reportTask = Task.Run(() => Analyze(project, token), token);
-
-                tasks.Add(reportTask);
-            }
-
-            foreach (var project in tasks)
-            {
+                yield return await Analyze(project, token);
                 ProgressReporter.Report((double)++analyzedProjects / totalProjects);
-                yield return await project;
             }
         }
     }
