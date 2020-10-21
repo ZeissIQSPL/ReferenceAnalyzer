@@ -30,11 +30,6 @@ namespace ReferenceAnalyzer.UI.Views
                 .DisposeWith(disposableRegistration);
 
                 this.Bind(ViewModel,
-                        viewModel => viewModel.Path,
-                        view => view.Path.Text)
-                    .DisposeWith(disposableRegistration);
-
-                this.Bind(ViewModel,
                         viewModel => viewModel.StopOnError,
                         view => view.StopOnError.IsChecked)
                     .DisposeWith(disposableRegistration);
@@ -79,7 +74,6 @@ namespace ReferenceAnalyzer.UI.Views
                 .DisposeWith(disposableRegistration);
         }
 
-        public TextBox Path => this.FindControl<TextBox>(nameof(Path));
         public CheckBox StopOnError => this.FindControl<CheckBox>(nameof(StopOnError));
         public ListBox Projects => this.FindControl<ListBox>(nameof(Projects));
         public ListBox ActualReferences => this.FindControl<ListBox>(nameof(ActualReferences));
@@ -94,8 +88,8 @@ namespace ReferenceAnalyzer.UI.Views
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
         public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
 
-        public ReactiveUserControl<SolutionViewModel> Partial_SolutionView =>
-            this.FindControl<ReactiveUserControl<SolutionViewModel>>(nameof(Partial_SolutionView));
+        public ReactiveUserControl<ISolutionViewModel> Partial_SolutionView =>
+            this.FindControl<ReactiveUserControl<ISolutionViewModel>>(nameof(Partial_SolutionView));
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {

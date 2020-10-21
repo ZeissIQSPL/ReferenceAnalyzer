@@ -12,7 +12,7 @@ using ReferenceAnalyzer.UI.ViewModels;
 namespace ReferenceAnalyzer.UI.Views
 {
 
-    public class SolutionView : ReactiveUserControl<SolutionViewModel>
+    public class SolutionView : ReactiveUserControl<ISolutionViewModel>
     {
         public SolutionView()
         {
@@ -22,7 +22,6 @@ namespace ReferenceAnalyzer.UI.Views
                        viewModel => viewModel.Path,
                        view => view.Path.Text)
                    .DisposeWith(disposableRegistration);
-
 
                 this.OneWayBind(ViewModel,
                         viewModel => viewModel.LastSolutions,
@@ -38,7 +37,7 @@ namespace ReferenceAnalyzer.UI.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        public TextBox Path => this.FindControl<TextBox>(nameof(Path));
+        public TextBlock Path => this.FindControl<TextBlock>(nameof(Path));
         public Button PickSolutionLocation => this.FindControl<Button>(nameof(PickSolutionLocation));
         public ListBox LastLoadedSolutions => this.FindControl<ListBox>(nameof(LastLoadedSolutions));
     }

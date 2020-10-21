@@ -55,18 +55,16 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public ReadOnlyObservableCollection<ReferencesReport> Reports => _reports;
         public ReadOnlyObservableCollection<string> Projects => _projects;
 
-
         public ReactiveCommand<Unit, IEnumerable<string>> Load { get; private set; }
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
         public ReactiveCommand<string, ReferencesReport> AnalyzeSelected { get; set; }
         public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
         public ReactiveCommand<IEnumerable<ReferencesReport>, Unit> RemoveAllUnused { get; set; }
 
-
         public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
 
-        public string Path { get { return SolutionViewModel.Path; } set { } }
-        public SolutionViewModel SolutionViewModel { get; }
+        //public string Path { get { return SolutionViewModel.Path; } set { } }
+        public ISolutionViewModel SolutionViewModel { get; }
 
         public ReferencesReport SelectedProjectReport =>
             Reports.FirstOrDefault(r => r.Project == SelectedProject) ?? ReferencesReport.Empty();
