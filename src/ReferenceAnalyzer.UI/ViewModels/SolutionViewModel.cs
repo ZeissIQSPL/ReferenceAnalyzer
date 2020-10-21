@@ -13,12 +13,6 @@ using ReferenceAnalyzer.UI.Services;
 
 namespace ReferenceAnalyzer.UI.ViewModels
 {
-    public interface ISolutionViewModel 
-    {
-        string Path { get; }
-        ReadOnlyObservableCollection<string> LastSolutions { get; }
-        ReactiveCommand<Unit, Unit> PickSolutionFile { get; }
-    }
 
     public class SolutionViewModel : ReactiveObject, ISolutionViewModel
     {

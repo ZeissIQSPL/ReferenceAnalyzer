@@ -29,7 +29,7 @@ namespace ReferenceAnalyzer.UI.Tests
         private string _receivedPopupMessage;
         private Mock<IReferencesEditor> _editor;
         private Mock<IReadableMessageSink> _sinkMock;
-        private Mock<ISolutionViewModel> _SolutionViewModel;
+        private Mock<ISolutionViewModel> _solutionViewModel;
         public MainWindowViewModelTests()
         {
             SetupAnalyzer();
@@ -38,11 +38,11 @@ namespace ReferenceAnalyzer.UI.Tests
             {
                 _editor = new Mock<IReferencesEditor>();
                 _sinkMock = new Mock<IReadableMessageSink>();
-                _SolutionViewModel = new Mock<ISolutionViewModel>();
+                _solutionViewModel = new Mock<ISolutionViewModel>();
                 _sinkMock.Setup(m => m.Lines)
                     .Returns(new ReadOnlyObservableCollection<string>(new ObservableCollection<string>()));
 
-                _sut = new MainWindowViewModel(_SolutionViewModel.Object, _analyzerMock.Object,
+                _sut = new MainWindowViewModel(_solutionViewModel.Object, _analyzerMock.Object,
                     _editor.Object, _sinkMock.Object);
 
                 _receivedPopupMessage = null;
@@ -89,34 +89,17 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void Instantiates()
         {
-            Action a = () => _ = new MainWindowViewModel(_SolutionViewModel.Object,
+            Action a = () => _ = new MainWindowViewModel(_solutionViewModel.Object,
                 _analyzerMock.Object, _editor.Object, _sinkMock.Object);
 
             a.Should().NotThrow();
         }
 
-        //[Fact]
-        //public void DefaultSolutionPathTakenFromSettings()
-        //{
-        //    const string expected = Path;
-
-        //    _sut.SolutionViewModel.Path.Should().Be(expected);
-        //}
-
-        //[Fact]
-        //public void ChangingPathSavedInSettings()
-        //{
-        //    const string newPath = "newPath";
-        //    _sut.SolutionViewModel.Path = newPath;
-
-        //    _settingsMock.VerifySet(x => x.SolutionPath = newPath);
-        //}
-
         [Fact]
         public void CorrectPathSetLoadingEnabled()
         {
             var canExecute = false;
-            _SolutionViewModel.Setup(x => x.Path).Returns("C:/Path");
+            _solutionViewModel.Setup(x => x.Path).Returns("C:/Path");
             _sut.Load.CanExecute.Subscribe(x => canExecute = x);
             _scheduler.AdvanceBy(3);
             canExecute.Should().Be(true);
@@ -126,7 +109,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void NoPathButtonDisabled()
         {
             var canExecute = true;
-            _SolutionViewModel.Setup(x => x.Path).Returns("");
+            _solutionViewModel.Setup(x => x.Path).Returns("");
             _sut.Load.CanExecute.Subscribe(x => canExecute = x);
             canExecute.Should().Be(false);
         }
@@ -134,7 +117,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ExceptionThrownInsideLoadingCommand()
         {
-            _SolutionViewModel.Setup(x => x.Path).Returns("error_project");
+            _solutionViewModel.Setup(x => x.Path).Returns("error_project");
             var wasError = false;
             _sut.Load.ThrownExceptions.Subscribe(_ => wasError = true);
 
@@ -147,7 +130,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ExceptionInLoadingMessageSentToInteraction()
         {
-            _SolutionViewModel.Setup(x => x.Path).Returns("error_project");
+            _solutionViewModel.Setup(x => x.Path).Returns("error_project");
 
             _sut.Load.Execute().Subscribe(_ => { }, onError: _ => {});
             _scheduler.AdvanceBy(3);
@@ -174,7 +157,7 @@ namespace ReferenceAnalyzer.UI.Tests
         {
             var path = Path;
 
-            _SolutionViewModel.Setup(x => x.Path).Returns(Path);
+            _solutionViewModel.Setup(x => x.Path).Returns(Path);
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
@@ -200,7 +183,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeAllDisabledIfNoSolutionLoaded()
         {
             var canExecute = true;
-            _SolutionViewModel.Setup(x => x.Path).Returns("");
+            _solutionViewModel.Setup(x => x.Path).Returns("");
             _sut.Analyze.CanExecute.Subscribe(x => canExecute = x);
             canExecute.Should().Be(false);
         }
@@ -209,7 +192,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeAllEnabledAfterSolutionLoaded()
         {
             var canExecute = false;
-            _SolutionViewModel.Setup(x => x.Path).Returns("any");
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Analyze.CanExecute.Subscribe(x => canExecute = x);
 
             _sut.Load.Execute().Subscribe();
@@ -222,7 +205,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeSelectedNotEnabledIfNoProjectSelected()
         {
             var canExecute = false;
-            _SolutionViewModel.Setup(x => x.Path).Returns("any");
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.AnalyzeSelected.CanExecute.Subscribe(x => canExecute = x);
 
             _sut.Load.Execute().Subscribe();
@@ -235,7 +218,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeSelectedEnabledIfAnyProjectSelected()
         {
             var canExecute = false;
-            _SolutionViewModel.Setup(x => x.Path).Returns("any");
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.AnalyzeSelected.CanExecute.Subscribe(x => canExecute = x);
 
             _sut.Load.Execute().Subscribe();
@@ -249,7 +232,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ProjectsListIsClearedBetweenLoads()
         {
-            _SolutionViewModel.Setup(x => x.Path).Returns("any");
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
@@ -265,7 +248,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ReportsAreClearedBetweenLoads()
         {
-            _SolutionViewModel.Setup(x => x.Path).Returns("any");
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
@@ -284,7 +267,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void SelectingNotAnalyzedProjectEmptyReportReturned()
         {
-            _SolutionViewModel.Setup(x => x.Path).Returns("any");
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
