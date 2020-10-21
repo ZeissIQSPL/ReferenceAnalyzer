@@ -25,16 +25,10 @@ namespace ReferenceAnalyzer.UI.ViewModels
         private string _log;
         private string _whitelist;
 
-        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor, IReadableMessageSink messageSink)
-            : this(settings, analyzer, editor, messageSink, new SolutionFilepathPicker())
-        {
-        }
 
-        public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor,
-                IReadableMessageSink messageSink, ISolutionFilepathPicker solutionFilepathPicker)
+        public MainWindowViewModel(ISolutionViewModel solutionViewModel, IReferenceAnalyzer analyzer, IReferencesEditor editor,
+                IReadableMessageSink messageSink)
         {
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
             if (analyzer == null)
                 throw new ArgumentNullException(nameof(analyzer));
             if (editor == null)
@@ -42,7 +36,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
             if (messageSink == null)
                 throw new ArgumentNullException(nameof(messageSink));
 
-            SolutionViewModel = new SolutionViewModel(settings, solutionFilepathPicker);
+            SolutionViewModel = solutionViewModel;
 
             ConfigureAnalyzer(analyzer);
             SetupCommands(analyzer, editor);

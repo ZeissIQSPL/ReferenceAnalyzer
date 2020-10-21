@@ -32,7 +32,7 @@ namespace ReferenceAnalyzer.UI
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = new MainWindowViewModel(
-                        new Settings(),
+                        new SolutionViewModel(new Settings(), new SolutionFilepathPicker()),
                         new Core.ReferenceAnalyzer(
                             messageSink, referencesEditor, xamlReferencesReader),
                         referencesEditor,
