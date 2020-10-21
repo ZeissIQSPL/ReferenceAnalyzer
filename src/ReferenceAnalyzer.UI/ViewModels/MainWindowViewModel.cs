@@ -19,7 +19,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
     {
         private ReadOnlyObservableCollection<ReferencesReport> _reports;
         private ReadOnlyObservableCollection<string> _projects;
-        private ReadOnlyObservableCollection<string> _lastSolutions;
         private bool _stopOnError;
         private string _selectedProject;
         private double _progress;
@@ -34,8 +33,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public MainWindowViewModel(ISettings settings, IReferenceAnalyzer analyzer, IReferencesEditor editor,
                 IReadableMessageSink messageSink, ISolutionFilepathPicker solutionFilepathPicker)
         {
-            SolutionViewModel = new SolutionViewModel();
-
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
             if (analyzer == null)
@@ -45,10 +42,11 @@ namespace ReferenceAnalyzer.UI.ViewModels
             if (messageSink == null)
                 throw new ArgumentNullException(nameof(messageSink));
 
+            SolutionViewModel = new SolutionViewModel(settings, solutionFilepathPicker);
+
             ConfigureAnalyzer(analyzer);
-            SetupSettings(settings);
-            SetupCommands(analyzer, editor, solutionFilepathPicker);
-            SetupProperties(analyzer, settings);
+            SetupCommands(analyzer, editor);
+            SetupProperties(analyzer);
             SetupSink(messageSink);
         }
 
@@ -56,14 +54,14 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         public ReadOnlyObservableCollection<ReferencesReport> Reports => _reports;
         public ReadOnlyObservableCollection<string> Projects => _projects;
-        public ReadOnlyObservableCollection<string> LastSolutions => _lastSolutions;
+
 
         public ReactiveCommand<Unit, IEnumerable<string>> Load { get; private set; }
         public ReactiveCommand<IEnumerable<string>, ReferencesReport> Analyze { get; private set; }
         public ReactiveCommand<string, ReferencesReport> AnalyzeSelected { get; set; }
         public ReactiveCommand<ReferencesReport, Unit> RemoveUnused { get; private set; }
         public ReactiveCommand<IEnumerable<ReferencesReport>, Unit> RemoveAllUnused { get; set; }
-        public ReactiveCommand<Unit, Unit> PickSolutionFile { get; private set; }
+
 
         public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
 
@@ -125,23 +123,10 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe(lines => Log = string.Join('\n', lines));
         }
 
-        private void SetupSettings(ISettings settings)
+      
+
+        private void SetupProperties(IReferenceAnalyzer analyzer)
         {
-            //_path = settings.SolutionPath;
-
-            this.WhenAnyValue(viewModel => viewModel.SolutionViewModel.Path)
-                .Subscribe(x => settings.SolutionPath = x);
-        }
-
-        private void SetupProperties(IReferenceAnalyzer analyzer, ISettings settings)
-        {
-            var solutions = new SourceList<string>();
-            settings.LastLoadedSolutions.Subscribe(Observer.Create<string>(o => solutions.Add(o)));
-            solutions.Connect().Bind(out _lastSolutions).Subscribe();
-
-            this.WhenAnyValue(viewModel => viewModel.SolutionViewModel.Path)
-                .Subscribe(x => { settings.SolutionPath = x; solutions.Add(x); });
-
 
             this.WhenAnyValue(viewModel => viewModel.StopOnError)
                 .Subscribe(x => analyzer.ThrowOnCompilationFailures = x);
@@ -151,12 +136,11 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
 
         private void SetupCommands(IReferenceAnalyzer projectProvider,
-            IReferencesEditor editor, ISolutionFilepathPicker solutionFilepathPicker)
+            IReferencesEditor editor)
         {
             SetupLoad(projectProvider);
             SetupAnalyze(projectProvider);
             SetupRemove(editor);
-            SetupPickSolutionFile(solutionFilepathPicker);
         }
 
         private void SetupLoad(IReferenceAnalyzer projectProvider)
@@ -228,16 +212,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 this.WhenAnyValue(x => x.Reports.Count, count => count > 0));
         }
 
-        private void SetupPickSolutionFile(ISolutionFilepathPicker solutionFilepathPicker)
-        {
-            PickSolutionFile = ReactiveCommand.CreateFromTask(() => SelectFilepath(solutionFilepathPicker));
-        }
 
-        private async Task SelectFilepath(ISolutionFilepathPicker solutionFilepathPicker)
-        {
-            var result = await solutionFilepathPicker.SelectSolutionFilePath();
-            SolutionViewModel.Path = result;
-        }
 
         private Task<Unit> RemoveReferences(ReferencesReport report, IReferencesEditor editor)
         {

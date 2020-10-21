@@ -93,8 +93,6 @@ namespace ReferenceAnalyzer.UI.Views
         public Button RemoveAllUnusedCommand => this.FindControl<Button>(nameof(RemoveAllUnusedCommand));
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
         public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
-        public Button PickSolutionLocation => this.FindControl<Button>(nameof(PickSolutionLocation));
-        public ListBox LastLoadedSolutions => this.FindControl<ListBox>(nameof(LastLoadedSolutions));
 
         public ReactiveUserControl<SolutionViewModel> Partial_SolutionView =>
             this.FindControl<ReactiveUserControl<SolutionViewModel>>(nameof(Partial_SolutionView));
@@ -126,10 +124,7 @@ namespace ReferenceAnalyzer.UI.Views
                     view => view.DiffReferences.Items)
                 .DisposeWith(disposableRegistration);
 
-            this.OneWayBind(ViewModel,
-                    viewModel => viewModel.LastSolutions,
-                    view => view.LastLoadedSolutions.Items)
-                .DisposeWith(disposableRegistration);
+
         }
 
         private void BindCommands(CompositeDisposable disposableRegistration)
@@ -163,10 +158,6 @@ namespace ReferenceAnalyzer.UI.Views
                     viewModel => viewModel.Reports)
                 .DisposeWith(disposableRegistration);
 
-            this.BindCommand(ViewModel,
-                    viewModel => viewModel.PickSolutionFile,                    
-                    view => view.PickSolutionLocation)
-                .DisposeWith(disposableRegistration);
         }
     }
 }
