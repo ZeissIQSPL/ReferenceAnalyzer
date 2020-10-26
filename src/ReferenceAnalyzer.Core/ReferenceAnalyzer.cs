@@ -19,6 +19,7 @@ namespace ReferenceAnalyzer.Core
         private readonly IReferencesEditor _editor;
         private readonly IXamlReferencesReader _xamlReferencesReader;
         private List<Project> _projects = new List<Project>();
+        private const int IndefiniteProgress = -1;
 
         public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor,
             IXamlReferencesReader xamlReferencesReader)
@@ -64,7 +65,7 @@ namespace ReferenceAnalyzer.Core
 
         public async Task<IEnumerable<string>> Load(string solution, CancellationToken token)
         {
-            ProgressReporter.Report(-1);
+            ProgressReporter.Report(IndefiniteProgress);
             token.Register(() => ProgressReporter.Report(0));
 
             using var workspace = MSBuildWorkspace.Create(BuildProperties);
@@ -124,7 +125,9 @@ namespace ReferenceAnalyzer.Core
             var visitor = new ReferencesWalker(compilation, ignoreRules);
 
             foreach (var tree in compilation.SyntaxTrees)
+            {
                 visitor.Visit(await tree.GetRootAsync(token));
+            }
 
             IEnumerable<string> xamlReferences = GetXamlReferences(project);
             xamlReferences = xamlReferences
@@ -229,7 +232,7 @@ namespace ReferenceAnalyzer.Core
 
             var analyzedProjects = 0;
             var totalProjects = projects.Count();
-            ProgressReporter.Report(-1);
+            ProgressReporter.Report(IndefiniteProgress);
 
             foreach (var project in projects)
             {
