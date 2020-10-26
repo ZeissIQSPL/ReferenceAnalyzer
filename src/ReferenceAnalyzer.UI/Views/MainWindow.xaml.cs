@@ -81,6 +81,7 @@ namespace ReferenceAnalyzer.UI.Views
         public ListBox DefinedReferences => this.FindControl<ListBox>(nameof(DefinedReferences));
         public ListBox DiffReferences => this.FindControl<ListBox>(nameof(DiffReferences));
         public Button LoadCommand => this.FindControl<Button>(nameof(LoadCommand));
+        public Button CancelCommand => this.FindControl<Button>(nameof(CancelCommand));
         public Button AnalyzeAllCommand => this.FindControl<Button>(nameof(AnalyzeAllCommand));
         public Button AnalyzeSelectedCommand => this.FindControl<Button>(nameof(AnalyzeSelectedCommand));
         public ProgressBar Progress => this.FindControl<ProgressBar>(nameof(Progress));
@@ -129,6 +130,11 @@ namespace ReferenceAnalyzer.UI.Views
             this.BindCommand(ViewModel,
                     viewModel => viewModel.Load,
                     view => view.LoadCommand)
+                .DisposeWith(disposableRegistration);
+
+            this.BindCommand(ViewModel,
+                    viewModel => viewModel.Cancel,
+                    view => view.CancelCommand)
                 .DisposeWith(disposableRegistration);
 
             this.BindCommand(ViewModel,
