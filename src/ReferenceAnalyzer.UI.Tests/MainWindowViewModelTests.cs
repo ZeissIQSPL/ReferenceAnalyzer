@@ -16,6 +16,7 @@ using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
 using System.Collections.Immutable;
+using System.Threading;
 
 namespace ReferenceAnalyzer.UI.Tests
 {
@@ -64,7 +65,7 @@ namespace ReferenceAnalyzer.UI.Tests
                 new ActualReference("project1", Enumerable.Empty<ReferenceOccurrence>())
             };
 
-            _analyzerMock.Setup(m => m.Load(It.IsAny<string>()))
+            _analyzerMock.Setup(m => m.Load(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new[] {"proj1", "proj2"}.AsEnumerable()));
 
             var firstReport = new ReferencesReport("proj1", new[] {"ref1", "ref2"}, referencedProjects, "anyPath");
@@ -72,16 +73,16 @@ namespace ReferenceAnalyzer.UI.Tests
 
             _reports = new[] {firstReport, secondReport};
 
-            _analyzerMock.Setup(m => m.Analyze("proj1"))
+            _analyzerMock.Setup(m => m.Analyze("proj1", It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(firstReport));
 
-            _analyzerMock.Setup(m => m.Analyze("proj2"))
+            _analyzerMock.Setup(m => m.Analyze("proj2", It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(secondReport));
 
-            _analyzerMock.Setup(m => m.Analyze(It.IsAny<IEnumerable<string>>()))
+            _analyzerMock.Setup(m => m.Analyze(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
                 .Returns(_reports.ToAsync());
 
-            _analyzerMock.Setup(m => m.Load("error_project"))
+            _analyzerMock.Setup(m => m.Load("error_project", It.IsAny<CancellationToken>()))
                 .Throws<InvalidOperationException>();
         }
 
@@ -161,7 +162,7 @@ namespace ReferenceAnalyzer.UI.Tests
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
-            _analyzerMock.Verify(x => x.Load(path));
+            _analyzerMock.Verify(x => x.Load(path, It.IsAny<CancellationToken>()));
         }
 
         [Fact]

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
@@ -17,6 +19,7 @@ namespace ReferenceAnalyzer.Core
         private readonly IReferencesEditor _editor;
         private readonly IXamlReferencesReader _xamlReferencesReader;
         private List<Project> _projects = new List<Project>();
+        private const int IndefiniteProgress = -1;
 
         public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor,
             IXamlReferencesReader xamlReferencesReader)
@@ -33,10 +36,16 @@ namespace ReferenceAnalyzer.Core
         public bool ThrowOnCompilationFailures { get; set; } = true;
         public IProgress<double> ProgressReporter { get; set; } = new Progress<double>();
 
-        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
+        public IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
         {
-            await Load(solutionPath);
-            await foreach (var a in AnalyzeAll())
+            return AnalyzeAll(solutionPath, CancellationToken.None);
+        }
+
+        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath,
+            [EnumeratorCancellation] CancellationToken token)
+        {
+            await Load(solutionPath, token);
+            await foreach (var a in AnalyzeAll(token))
                 yield return a;
         }
 
@@ -51,11 +60,18 @@ namespace ReferenceAnalyzer.Core
 
         public async Task<IEnumerable<string>> Load(string solution)
         {
-            ProgressReporter.Report(-1);
+            return await Load(solution, CancellationToken.None);
+        }
+
+        public async Task<IEnumerable<string>> Load(string solution, CancellationToken token)
+        {
+            ProgressReporter.Report(IndefiniteProgress);
+            token.Register(() => ProgressReporter.Report(0));
+
             using var workspace = MSBuildWorkspace.Create(BuildProperties);
             workspace.SkipUnrecognizedProjects = true;
 
-            var loadedSolution = await workspace.OpenSolutionAsync(solution);
+            var loadedSolution = await workspace.OpenSolutionAsync(solution, cancellationToken: token);
 
             foreach (var d in workspace.Diagnostics)
                 _messageSink.Write($"{d.Kind}: {d.Message}");
@@ -80,19 +96,24 @@ namespace ReferenceAnalyzer.Core
 
         public async Task<ReferencesReport> Analyze(string target)
         {
-            var project = _projects.First(p => p.Name == target);
-
-            return await Analyze(project);
+            return await Analyze(target, CancellationToken.None);
         }
 
-        private async Task<ReferencesReport> Analyze(Project project)
+        public async Task<ReferencesReport> Analyze(string target, CancellationToken token)
+        {
+            var project = _projects.First(p => p.Name == target);
+
+            return await Analyze(project, token);
+        }
+
+        private async Task<ReferencesReport> Analyze(Project project, CancellationToken token)
         {
             if (project.FilePath == null)
                 throw new InvalidOperationException("Attempted to analyze project without a disk path");
 
             var outputPath = Path.GetFullPath(Path.Combine(project.OutputFilePath!, ".."));
 
-            Compilation compilation = await GetCompilation(project, outputPath);
+            Compilation compilation = await GetCompilation(project, outputPath, token);
 
             var ignoreRules = new Func<string, bool>[]
             {
@@ -103,31 +124,35 @@ namespace ReferenceAnalyzer.Core
 
             var visitor = new ReferencesWalker(compilation, ignoreRules);
 
-            var treeAnalysis = new List<Task>(compilation.SyntaxTrees.Count());
-            var analysisTasks = compilation.SyntaxTrees
-                .Select(tree => Task.Run(async () => visitor.Visit(await tree.GetRootAsync())));
-            treeAnalysis.AddRange(analysisTasks);
-
-            await Task.WhenAll(treeAnalysis);
+            foreach (var tree in compilation.SyntaxTrees)
+            {
+                visitor.Visit(await tree.GetRootAsync(token));
+            }
 
             IEnumerable<string> xamlReferences = GetXamlReferences(project);
             xamlReferences = xamlReferences
                 .Where(reference => ignoreRules.All(rule => !rule(reference)));
 
             var groupedAssemblies = visitor.Occurrences
+                .AsParallel()
+                .WithCancellation(token)
                 .GroupBy(o => o.UsedType.ContainingAssembly)
                 .Where(g => g.Key != null);
+
 
             var actualReferences = groupedAssemblies
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .Concat(xamlReferences
+                    .AsParallel()
                     .Select(r => new ActualReference(r, Enumerable.Empty<ReferenceOccurrence>())))
                 .Distinct()
-                .OrderBy(r => r.Target);
+                .OrderBy(r => r.Target)
+                .ToList();
 
 
             var definedReferences = _editor.GetReferencedProjects(project.FilePath)
-                .OrderBy(n => n);
+                .OrderBy(n => n)
+                .ToList();
 
             return new ReferencesReport(project.Name, definedReferences, actualReferences, project.FilePath);
         }
@@ -144,9 +169,9 @@ namespace ReferenceAnalyzer.Core
             return xamlReferences;
         }
 
-        private async Task<Compilation> GetCompilation(Project project, string outputPath)
+        private async Task<Compilation> GetCompilation(Project project, string outputPath, CancellationToken token)
         {
-            var compilation = await project.GetCompilationAsync();
+            var compilation = await project.GetCompilationAsync(token);
             var referencedProjects = _editor.GetReferencedProjects(project.FilePath!);
             var assemblies = referencedProjects
                 .Select(p =>
@@ -164,7 +189,7 @@ namespace ReferenceAnalyzer.Core
             compilation = compilation!.AddReferences(assemblies);
 
             await using var dummy = new MemoryStream();
-            var compilationResult = compilation.Emit(dummy);
+            var compilationResult = compilation.Emit(dummy, cancellationToken: token);
 
             foreach (var d in compilationResult.Diagnostics)
                 _messageSink.Write($"{d.Severity}: {d.GetMessage()}");
@@ -181,22 +206,38 @@ namespace ReferenceAnalyzer.Core
             return compilation;
         }
 
-        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll()
+        public IAsyncEnumerable<ReferencesReport> AnalyzeAll()
         {
-            await foreach (var report in Analyze(_projects.Select(p => p.Name)))
+            return AnalyzeAll(CancellationToken.None);
+        }
+
+        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll([EnumeratorCancellation] CancellationToken token)
+        {
+            await foreach (var report in Analyze(_projects.Select(p => p.Name), token))
                 yield return report;
         }
 
-        public async IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects)
+        public IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects)
         {
+            return Analyze(projects, CancellationToken.None);
+        }
+
+        public async IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects,
+            [EnumeratorCancellation] CancellationToken token)
+        {
+            if (projects == null)
+                throw new ArgumentNullException(nameof(projects));
+
+            token.Register(() => ProgressReporter.Report(0));
+
             var analyzedProjects = 0;
             var totalProjects = projects.Count();
-            ProgressReporter.Report(0);
+            ProgressReporter.Report(IndefiniteProgress);
+
             foreach (var project in projects)
             {
-                var report = await Analyze(project);
+                yield return await Analyze(project, token);
                 ProgressReporter.Report((double)++analyzedProjects / totalProjects);
-                yield return report;
             }
         }
     }
