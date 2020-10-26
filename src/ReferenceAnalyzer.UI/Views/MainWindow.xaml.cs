@@ -25,9 +25,9 @@ namespace ReferenceAnalyzer.UI.Views
             this.WhenActivated(disposableRegistration =>
             {
                 this.Bind(ViewModel,
-                        viewModel => viewModel.Path,
-                        view => view.Path.Text)
-                    .DisposeWith(disposableRegistration);
+                    viewModel => viewModel.SolutionViewModel,
+                    view => view.SolutionView.ViewModel)
+                .DisposeWith(disposableRegistration);
 
                 this.Bind(ViewModel,
                         viewModel => viewModel.StopOnError,
@@ -74,7 +74,6 @@ namespace ReferenceAnalyzer.UI.Views
                 .DisposeWith(disposableRegistration);
         }
 
-        public TextBox Path => this.FindControl<TextBox>(nameof(Path));
         public CheckBox StopOnError => this.FindControl<CheckBox>(nameof(StopOnError));
         public ListBox Projects => this.FindControl<ListBox>(nameof(Projects));
         public ListBox ActualReferences => this.FindControl<ListBox>(nameof(ActualReferences));
@@ -89,8 +88,9 @@ namespace ReferenceAnalyzer.UI.Views
         public Button RemoveAllUnusedCommand => this.FindControl<Button>(nameof(RemoveAllUnusedCommand));
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
         public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
-        public Button PickSolutionLocation => this.FindControl<Button>(nameof(PickSolutionLocation));
-        public ListBox LastLoadedSolutions => this.FindControl<ListBox>(nameof(LastLoadedSolutions));
+
+        public ReactiveUserControl<ISolutionViewModel> SolutionView =>
+            this.FindControl<ReactiveUserControl<ISolutionViewModel>>(nameof(SolutionView));
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {
@@ -119,10 +119,7 @@ namespace ReferenceAnalyzer.UI.Views
                     view => view.DiffReferences.Items)
                 .DisposeWith(disposableRegistration);
 
-            this.OneWayBind(ViewModel,
-                    viewModel => viewModel.LastSolutions,
-                    view => view.LastLoadedSolutions.Items)
-                .DisposeWith(disposableRegistration);
+
         }
 
         private void BindCommands(CompositeDisposable disposableRegistration)
@@ -161,10 +158,6 @@ namespace ReferenceAnalyzer.UI.Views
                     viewModel => viewModel.Reports)
                 .DisposeWith(disposableRegistration);
 
-            this.BindCommand(ViewModel,
-                    viewModel => viewModel.PickSolutionFile,                    
-                    view => view.PickSolutionLocation)
-                .DisposeWith(disposableRegistration);
         }
     }
 }

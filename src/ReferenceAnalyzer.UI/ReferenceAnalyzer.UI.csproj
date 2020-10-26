@@ -16,6 +16,9 @@
     <AvaloniaResource Remove="Assets\MessageSink.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Views\SolutionView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.ReactiveUI" />
@@ -24,6 +27,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReferenceAnalyzer.Core\ReferenceAnalyzer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Update="Views\SolutionView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\SolutionView.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(SolutionDir)ReferenceAnalyzer.Common.targets" />
 </Project>

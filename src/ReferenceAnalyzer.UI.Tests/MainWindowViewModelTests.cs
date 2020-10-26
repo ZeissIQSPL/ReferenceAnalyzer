@@ -23,7 +23,6 @@ namespace ReferenceAnalyzer.UI.Tests
     public class MainWindowViewModelTests
     {
         private const string Path = "samplePath";
-        private Mock<ISettings> _settingsMock;
         private Mock<IReferenceAnalyzer> _analyzerMock;
         private MainWindowViewModel _sut;
         private IEnumerable<ReferencesReport> _reports;
@@ -31,24 +30,21 @@ namespace ReferenceAnalyzer.UI.Tests
         private string _receivedPopupMessage;
         private Mock<IReferencesEditor> _editor;
         private Mock<IReadableMessageSink> _sinkMock;
-        private Mock<ISolutionFilepathPicker> _slnFilepathPicker;
+        private Mock<ISolutionViewModel> _solutionViewModel;
         public MainWindowViewModelTests()
         {
             SetupAnalyzer();
-
-            SetupSettings();
 
             new TestScheduler().With(scheduler =>
             {
                 _editor = new Mock<IReferencesEditor>();
                 _sinkMock = new Mock<IReadableMessageSink>();
-                _slnFilepathPicker = new Mock<ISolutionFilepathPicker>();
-                _settingsMock.Setup(x => x.LastLoadedSolutions).Returns(ImmutableList.Create<string>());
+                _solutionViewModel = new Mock<ISolutionViewModel>();
                 _sinkMock.Setup(m => m.Lines)
                     .Returns(new ReadOnlyObservableCollection<string>(new ObservableCollection<string>()));
 
-                _sut = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object,
-                    _editor.Object, _sinkMock.Object, _slnFilepathPicker.Object);
+                _sut = new MainWindowViewModel(_solutionViewModel.Object, _analyzerMock.Object,
+                    _editor.Object, _sinkMock.Object);
 
                 _receivedPopupMessage = null;
                 _sut.MessagePopup
@@ -90,44 +86,23 @@ namespace ReferenceAnalyzer.UI.Tests
                 .Throws<InvalidOperationException>();
         }
 
-        private void SetupSettings()
-        {
-            _settingsMock = new Mock<ISettings>();
-            _settingsMock.Setup(x => x.SolutionPath).Returns(Path);
-            _settingsMock.SetupSet(x => x.SolutionPath = It.IsAny<string>()).Verifiable();
-        }
 
         [Fact]
         public void Instantiates()
         {
-            Action a = () => _ = new MainWindowViewModel(_settingsMock.Object, _analyzerMock.Object, _editor.Object, _sinkMock.Object);
+            Action a = () => _ = new MainWindowViewModel(_solutionViewModel.Object,
+                _analyzerMock.Object, _editor.Object, _sinkMock.Object);
 
             a.Should().NotThrow();
-        }
-
-        [Fact]
-        public void DefaultSolutionPathTakenFromSettings()
-        {
-            const string expected = Path;
-
-            _sut.Path.Should().Be(expected);
-        }
-
-        [Fact]
-        public void ChangingPathSavedInSettings()
-        {
-            const string newPath = "newPath";
-            _sut.Path = newPath;
-
-            _settingsMock.VerifySet(x => x.SolutionPath = newPath);
         }
 
         [Fact]
         public void CorrectPathSetLoadingEnabled()
         {
             var canExecute = false;
-            _sut.Path = "C:/Path";
+            _solutionViewModel.Setup(x => x.Path).Returns("C:/Path");
             _sut.Load.CanExecute.Subscribe(x => canExecute = x);
+            _scheduler.AdvanceBy(3);
             canExecute.Should().Be(true);
         }
 
@@ -135,7 +110,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void NoPathButtonDisabled()
         {
             var canExecute = true;
-            _sut.Path = "";
+            _solutionViewModel.Setup(x => x.Path).Returns("");
             _sut.Load.CanExecute.Subscribe(x => canExecute = x);
             canExecute.Should().Be(false);
         }
@@ -143,8 +118,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ExceptionThrownInsideLoadingCommand()
         {
-            _sut.Path = "error_project";
-
+            _solutionViewModel.Setup(x => x.Path).Returns("error_project");
             var wasError = false;
             _sut.Load.ThrownExceptions.Subscribe(_ => wasError = true);
 
@@ -157,7 +131,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ExceptionInLoadingMessageSentToInteraction()
         {
-            _sut.Path = "error_project";
+            _solutionViewModel.Setup(x => x.Path).Returns("error_project");
 
             _sut.Load.Execute().Subscribe(_ => { }, onError: _ => {});
             _scheduler.AdvanceBy(3);
@@ -183,7 +157,8 @@ namespace ReferenceAnalyzer.UI.Tests
         public void LoadedServiceInvoked()
         {
             var path = Path;
-            _sut.Path = path;
+
+            _solutionViewModel.Setup(x => x.Path).Returns(Path);
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
@@ -209,7 +184,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeAllDisabledIfNoSolutionLoaded()
         {
             var canExecute = true;
-            _sut.Path = "";
+            _solutionViewModel.Setup(x => x.Path).Returns("");
             _sut.Analyze.CanExecute.Subscribe(x => canExecute = x);
             canExecute.Should().Be(false);
         }
@@ -218,7 +193,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeAllEnabledAfterSolutionLoaded()
         {
             var canExecute = false;
-            _sut.Path = "any";
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Analyze.CanExecute.Subscribe(x => canExecute = x);
 
             _sut.Load.Execute().Subscribe();
@@ -231,7 +206,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeSelectedNotEnabledIfNoProjectSelected()
         {
             var canExecute = false;
-            _sut.Path = "any";
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.AnalyzeSelected.CanExecute.Subscribe(x => canExecute = x);
 
             _sut.Load.Execute().Subscribe();
@@ -244,7 +219,7 @@ namespace ReferenceAnalyzer.UI.Tests
         public void AnalyzeSelectedEnabledIfAnyProjectSelected()
         {
             var canExecute = false;
-            _sut.Path = "any";
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.AnalyzeSelected.CanExecute.Subscribe(x => canExecute = x);
 
             _sut.Load.Execute().Subscribe();
@@ -258,7 +233,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ProjectsListIsClearedBetweenLoads()
         {
-            _sut.Path = "any";
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
@@ -274,7 +249,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void ReportsAreClearedBetweenLoads()
         {
-            _sut.Path = "any";
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
@@ -293,7 +268,7 @@ namespace ReferenceAnalyzer.UI.Tests
         [Fact]
         public void SelectingNotAnalyzedProjectEmptyReportReturned()
         {
-            _sut.Path = "any";
+            _solutionViewModel.Setup(x => x.Path).Returns("any");
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
