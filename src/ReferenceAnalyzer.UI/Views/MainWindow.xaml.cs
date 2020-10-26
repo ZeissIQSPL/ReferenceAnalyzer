@@ -26,7 +26,7 @@ namespace ReferenceAnalyzer.UI.Views
             {
                 this.Bind(ViewModel,
                     viewModel => viewModel.SolutionViewModel,
-                    view => view.Partial_SolutionView.ViewModel)
+                    view => view.SolutionView.ViewModel)
                 .DisposeWith(disposableRegistration);
 
                 this.Bind(ViewModel,
@@ -88,8 +88,8 @@ namespace ReferenceAnalyzer.UI.Views
         public TextBlock Logs => this.FindControl<TextBlock>(nameof(Logs));
         public TextBox Whitelist => this.FindControl<TextBox>(nameof(Whitelist));
 
-        public ReactiveUserControl<ISolutionViewModel> Partial_SolutionView =>
-            this.FindControl<ReactiveUserControl<ISolutionViewModel>>(nameof(Partial_SolutionView));
+        public ReactiveUserControl<ISolutionViewModel> SolutionView =>
+            this.FindControl<ReactiveUserControl<ISolutionViewModel>>(nameof(SolutionView));
 
         private void BindLists(CompositeDisposable disposableRegistration)
         {

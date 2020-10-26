@@ -19,7 +19,7 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <DockPanel Grid.Column="0">
-            <views:SolutionView Name="Partial_SolutionView" DockPanel.Dock="Top" />
+            <views:SolutionView Name="SolutionView" DockPanel.Dock="Top" />
             <!---->
             <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
             <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>

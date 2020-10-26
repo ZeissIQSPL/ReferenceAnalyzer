@@ -57,7 +57,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         public Interaction<string, Unit> MessagePopup { get; } = new Interaction<string, Unit>();
 
-        //public string Path { get { return SolutionViewModel.Path; } set { } }
         public ISolutionViewModel SolutionViewModel { get; }
 
         public ReferencesReport SelectedProjectReport =>
