@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Text.Json;
+using DynamicData.Binding;
 using Microsoft.VisualBasic;
 
 namespace ReferenceAnalyzer.UI.Models
@@ -15,56 +16,45 @@ namespace ReferenceAnalyzer.UI.Models
         private const string SolutionPathKey = "SolutionPath";
         private const string LastSolutionsKey = "LastSolutions";
         private readonly Configuration _configuration;
-
+        private ObservableCollectionExtended<string> _lastLoadedSolutions;
         public Settings()
         {
             _configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            _lastLoadedSolutions = LoadSettings();
         }
 
-        public string SolutionPath
+        public ObservableCollectionExtended<string> LastLoadedSolutions => _lastLoadedSolutions;
+
+        private ObservableCollectionExtended<string> LoadSettings()
         {
-            get => _configuration.AppSettings.Settings[SolutionPathKey]?.Value;
-            set
+            var serializedJson = _configuration.AppSettings.Settings[LastSolutionsKey]?.Value;
+            if (string.IsNullOrEmpty(serializedJson))
             {
-                var settings = _configuration.AppSettings.Settings;
-                if (settings[SolutionPathKey]?.Value == null)
-                {
-                    settings.Add(SolutionPathKey, value);
-                }
-                else
-                {
-                    settings[SolutionPathKey].Value = value;
-                    if (!LastLoadedSolutions.Contains(value))
-                    {
-                        LastLoadedSolutions = LastLoadedSolutions.Add(value);
-                    }
-                }
-                _configuration.Save(ConfigurationSaveMode.Modified);
+                return new ObservableCollectionExtended<string>();
             }
+            var list = JsonSerializer.Deserialize<ObservableCollectionExtended<string>>(serializedJson);
+            var observableCollection = new ObservableCollectionExtended<string>();
+            foreach (var v in list)
+            {
+                if (v != null)
+                    observableCollection.Add(v);
+            }
+            return observableCollection;
         }
 
-
-
-        public IImmutableList<string> LastLoadedSolutions
+        public void SaveSettings()
         {
-            get
+
+            var settings = _configuration.AppSettings.Settings;
+            if (settings[LastSolutionsKey]?.Value == null)
+                settings.Add(LastSolutionsKey, JsonSerializer.Serialize(LastLoadedSolutions));
+            else
             {
-                var serializedJson = _configuration.AppSettings.Settings[LastSolutionsKey]?.Value;
-                return !string.IsNullOrEmpty(serializedJson) ?
-                    JsonSerializer.Deserialize<IImmutableList<string>>(serializedJson) : ImmutableList.Create<string>();
+                settings[LastSolutionsKey].Value = JsonSerializer.Serialize(LastLoadedSolutions);
             }
-            set
-            {
-                var settings = _configuration.AppSettings.Settings;
-                if (settings[LastSolutionsKey]?.Value == null)
-                    settings.Add(LastSolutionsKey, JsonSerializer.Serialize(value));
-                else
-                {
-                    settings[LastSolutionsKey].Value = JsonSerializer.Serialize(value);
-                }
-                    
-                _configuration.Save(ConfigurationSaveMode.Modified);
-            }
+
+            _configuration.Save(ConfigurationSaveMode.Modified);
+
         }
     }
 }

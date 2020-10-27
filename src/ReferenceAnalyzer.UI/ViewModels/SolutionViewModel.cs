@@ -1,12 +1,12 @@
+
+
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DynamicData;
+using DynamicData.Binding;
 using ReactiveUI;
 using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.UI.Services;
@@ -16,8 +16,9 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
     public class SolutionViewModel : ReactiveObject, ISolutionViewModel
     {
-        private ReadOnlyObservableCollection<string> _lastSolutions;
         private string _path;
+        private string _selectedPath;
+        private ReadOnlyObservableCollection<string> _lastSolutions;
 
         public SolutionViewModel(ISettings settings, ISolutionFilepathPicker solutionFilepathPicker)
         {
@@ -33,19 +34,20 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public ReactiveCommand<Unit, Unit> PickSolutionFile { get; private set; }
 
         public ReadOnlyObservableCollection<string> LastSolutions => _lastSolutions;
+
+        public string SelectedPath
+        {
+            get => _selectedPath;
+            set => this.RaiseAndSetIfChanged(ref _selectedPath, value);
+        }
         private void SetupSettings(ISettings settings)
         {
-            _path = settings.SolutionPath;
+            settings.LastLoadedSolutions.ToObservableChangeSet().Filter(x => x != null).Bind(out _lastSolutions).Subscribe();
 
             this.WhenAnyValue(viewModel => viewModel.Path)
-                .Subscribe(x => settings.SolutionPath = x);
+                .Subscribe(x => { settings.LastLoadedSolutions.Add(x); settings.SaveSettings(); });
 
-            var solutions = new SourceList<string>();
-            settings.LastLoadedSolutions.Subscribe(Observer.Create<string>(o => solutions.Add(o)));
-            solutions.Connect().Bind(out _lastSolutions).Subscribe();
-
-            this.WhenAnyValue(viewModel => viewModel.Path)
-                .Subscribe(x => { settings.SolutionPath = x; solutions.Add(x); });
+            this.WhenAnyValue(viewModel => viewModel.SelectedPath).Subscribe(x => Path = x);
 
         }
         private void SetupPickSolutionFile(ISolutionFilepathPicker solutionFilepathPicker)
