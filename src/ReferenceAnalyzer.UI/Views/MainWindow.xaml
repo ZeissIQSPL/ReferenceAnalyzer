@@ -7,6 +7,7 @@
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
         xmlns:views="clr-namespace:ReferenceAnalyzer.UI.Views;assembly=ReferenceAnalyzer.UI"
         mc:Ignorable="d" Width="1600" Height="900"
+        MinWidth="1024" MinHeight="768"
         x:Class="ReferenceAnalyzer.UI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="ReferenceAnalyzer.UI">
@@ -26,20 +27,16 @@
             <Button Margin="8" Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>
             <Button Margin="8" Name="RemoveUnusedCommand" DockPanel.Dock="Top">Remove unused</Button>
             <Button Margin="8" Name="RemoveAllUnusedCommand" DockPanel.Dock="Top">Remove all unused</Button>
-            <ProgressBar Name="Progress" DockPanel.Dock="Top" Minimum="0" Maximum="1"/>
-            <Grid Margin="4" DockPanel.Dock="Top">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="11*"/>
-                </Grid.ColumnDefinitions>
-                <CheckBox Grid.Column="0" Name="StopOnError"></CheckBox>
-                <TextBlock Grid.Column="1"  Text="Stop on error"></TextBlock>
-            </Grid>
-            <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+            <ProgressBar Margin="8" Name="Progress" DockPanel.Dock="Top" Minimum="0" Maximum="1"/>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                <CheckBox Margin="6"  Name="StopOnError"></CheckBox>
+                <TextBlock Margin="6" Text="Stop on error"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch"  DockPanel.Dock="Top">
                 <TextBlock Text="Whitelist"></TextBlock>
                 <TextBox Name="Whitelist"></TextBox>
             </StackPanel>
-            <ScrollViewer DockPanel.Dock="Bottom" Height="300"
+            <ScrollViewer DockPanel.Dock="Bottom" Height="150"
                           VerticalScrollBarVisibility="Visible"
                           HorizontalScrollBarVisibility="Disabled">
                 <TextBlock Name="Logs" TextWrapping="Wrap"/>
