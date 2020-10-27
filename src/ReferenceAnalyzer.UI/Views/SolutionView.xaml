@@ -11,7 +11,7 @@
     xmlns:rxui="http://reactiveui.net"
     mc:Ignorable="d" >
 
-    <StackPanel Background="#FFe5e5e6">
+    <StackPanel Margin="8" >
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width ="3*"/>
