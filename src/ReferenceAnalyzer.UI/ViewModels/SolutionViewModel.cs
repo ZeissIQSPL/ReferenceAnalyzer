@@ -33,6 +33,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _path, value);
         }
         public ReactiveCommand<Unit, Unit> PickSolutionFile { get; private set; }
+        public ReactiveCommand<Unit, Unit> ClearSolutionList { get; private set; }
 
         public ReadOnlyObservableCollection<string> LastSolutions => _lastSolutions;
 
@@ -41,6 +42,9 @@ namespace ReferenceAnalyzer.UI.ViewModels
             get => _selectedPath;
             set => this.RaiseAndSetIfChanged(ref _selectedPath, value);
         }
+
+
+
         private void SetupSettings(ISettings settings)
         {
             settings.LastLoadedSolutions.ToObservableChangeSet()
@@ -53,6 +57,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
             this.WhenAnyValue(viewModel => viewModel.SelectedPath).Subscribe(x => Path = x);
 
+            ClearSolutionList = ReactiveCommand.Create(() => settings.LastLoadedSolutions.Clear());
         }
 
         private void UpdateLastSolutions(ISettings settings, string newSolution)

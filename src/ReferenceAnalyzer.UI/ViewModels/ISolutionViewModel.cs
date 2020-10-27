@@ -11,5 +11,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
         string SelectedPath { get; set; }
         ReadOnlyObservableCollection<string> LastSolutions { get; }
         ReactiveCommand<Unit, Unit> PickSolutionFile { get; }
+        ReactiveCommand<Unit, Unit> ClearSolutionList { get; }
     }
 }
