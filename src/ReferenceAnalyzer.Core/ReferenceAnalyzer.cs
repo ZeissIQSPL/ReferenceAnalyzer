@@ -68,6 +68,8 @@ namespace ReferenceAnalyzer.Core
             ProgressReporter.Report(IndefiniteProgress);
             token.Register(() => ProgressReporter.Report(0));
 
+            _editor.InvalidateCache();
+
             using var workspace = MSBuildWorkspace.Create(BuildProperties);
             workspace.SkipUnrecognizedProjects = true;
 

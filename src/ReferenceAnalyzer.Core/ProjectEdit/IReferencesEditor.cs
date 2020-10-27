@@ -8,5 +8,6 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
         IEnumerable<string> GetReferencedPackages(string projectPath);
         void RemoveReferencedProjects(string projectPath, IEnumerable<string> projects);
         string? GetOutputAssemblyName(string projectPath);
+        void InvalidateCache();
     }
 }
