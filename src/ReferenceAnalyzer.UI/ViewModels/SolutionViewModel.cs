@@ -43,25 +43,38 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
         private void SetupSettings(ISettings settings)
         {
-            settings.LastLoadedSolutions.ToObservableChangeSet().Filter(x => x != null).Bind(out _lastSolutions).Subscribe();
+            settings.LastLoadedSolutions.ToObservableChangeSet()
+                .Filter(x => x != null)
+                .Reverse()
+                .Bind(out _lastSolutions).Subscribe();
 
             this.WhenAnyValue(viewModel => viewModel.Path)
-                .Subscribe(x => {
-                    var count = settings.LastLoadedSolutions.Count;
-                        if (!settings.LastLoadedSolutions.Contains(x))
-                        {
-                            if (count > LAST_SOLUTION_LIST_LIMIT)
-                            {
-                                settings.LastLoadedSolutions.RemoveAt(0);
-                            }
-                            settings.LastLoadedSolutions.Add(x);
-                            settings.SaveSettings();
-                        }
-                });
+                .Subscribe(x => UpdateLastSolutions(settings, x));
 
             this.WhenAnyValue(viewModel => viewModel.SelectedPath).Subscribe(x => Path = x);
 
         }
+
+        private void UpdateLastSolutions(ISettings settings, string newSolution)
+        {
+            var count = settings.LastLoadedSolutions.Count;
+            if (!settings.LastLoadedSolutions.Contains(newSolution))
+            {
+                if (count > LAST_SOLUTION_LIST_LIMIT)
+                {
+                    settings.LastLoadedSolutions.RemoveAt(0);
+                }
+                settings.LastLoadedSolutions.Add(newSolution);
+                settings.SaveSettings();
+            } else
+            {
+                var index = settings.LastLoadedSolutions.IndexOf(newSolution);
+                settings.LastLoadedSolutions.RemoveAt(index);
+                settings.LastLoadedSolutions.Add(newSolution);
+                settings.SaveSettings();
+            }
+        }
+
         private void SetupPickSolutionFile(ISolutionFilepathPicker solutionFilepathPicker)
         {
             PickSolutionFile = ReactiveCommand.CreateFromTask(() => SelectFilepath(solutionFilepathPicker));
