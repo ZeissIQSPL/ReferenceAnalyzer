@@ -11,7 +11,7 @@
     xmlns:rxui="http://reactiveui.net"
     mc:Ignorable="d" >
 
-    <StackPanel Margin="8" >
+    <StackPanel Margin="8">
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width ="3*"/>
@@ -20,7 +20,7 @@
             <TextBlock Name="Path" Grid.Column="0" />
             <Button Name="PickSolutionLocation" Grid.Column="1">Pick</Button>
         </Grid>
-        <ListBox Name="LastLoadedSolutions" DockPanel.Dock="Top">
+        <ListBox Name="LastLoadedSolutions" DockPanel.Dock="Top" BorderThickness="0" >
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding}"/>
