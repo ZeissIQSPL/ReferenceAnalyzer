@@ -10,7 +10,6 @@
         x:Class="ReferenceAnalyzer.UI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="ReferenceAnalyzer.UI">
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -18,20 +17,24 @@
             <ColumnDefinition />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <DockPanel Grid.Column="0">
+        <DockPanel Margin="4" Grid.Column="0">
             <views:SolutionView Name="SolutionView" DockPanel.Dock="Top" />
             <!---->
-            <Button Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
-            <Button Name="CancelCommand" DockPanel.Dock="Top">Cancel</Button>
-            <Button Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
-            <Button Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>
-            <Button Name="RemoveUnusedCommand" DockPanel.Dock="Top">Remove unused</Button>
-            <Button Name="RemoveAllUnusedCommand" DockPanel.Dock="Top">Remove all unused</Button>
+            <Button Margin="8" Name="LoadCommand" DockPanel.Dock="Top">Load</Button>
+            <Button Margin="8" Name="CancelCommand" DockPanel.Dock="Top">Cancel</Button>
+            <Button Margin="8" Name="AnalyzeAllCommand" DockPanel.Dock="Top">Analyze all</Button>
+            <Button Margin="8" Name="AnalyzeSelectedCommand" DockPanel.Dock="Top">Analyze selected</Button>
+            <Button Margin="8" Name="RemoveUnusedCommand" DockPanel.Dock="Top">Remove unused</Button>
+            <Button Margin="8" Name="RemoveAllUnusedCommand" DockPanel.Dock="Top">Remove all unused</Button>
             <ProgressBar Name="Progress" DockPanel.Dock="Top" Minimum="0" Maximum="1"/>
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-                <CheckBox Name="StopOnError"></CheckBox>
-                <TextBlock Text="Stop on error"></TextBlock>
-            </StackPanel>
+            <Grid Margin="4" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="11*"/>
+                </Grid.ColumnDefinitions>
+                <CheckBox Grid.Column="0" Name="StopOnError"></CheckBox>
+                <TextBlock Grid.Column="1"  Text="Stop on error"></TextBlock>
+            </Grid>
             <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
                 <TextBlock Text="Whitelist"></TextBlock>
                 <TextBox Name="Whitelist"></TextBox>
@@ -49,26 +52,35 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
-        <ListBox Name="DefinedReferences" Grid.Column="1">
+        <DockPanel Grid.Column="1">
+            <TextBlock FontSize="22"  DockPanel.Dock="Top" Text="Defined References" HorizontalAlignment="Center"/>
+            <ListBox Name="DefinedReferences" DockPanel.Dock="Top">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <ListBox Name="ActualReferences" Grid.Column="2">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Target}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <ListBox Name="DiffReferences" Grid.Column="3">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        </DockPanel>
+        <DockPanel Grid.Column="2">
+            <TextBlock FontSize="22"  DockPanel.Dock="Top" Text="Actual References" HorizontalAlignment="Center"/>
+            <ListBox Name="ActualReferences">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Target}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+        <DockPanel Grid.Column="3">
+            <TextBlock FontSize="22"  DockPanel.Dock="Top" Text="Difference in references" HorizontalAlignment="Center"/>
+            <ListBox Name="DiffReferences" Grid.Column="3">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
     </Grid>
 </Window>

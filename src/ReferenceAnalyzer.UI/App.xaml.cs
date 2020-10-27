@@ -6,6 +6,7 @@ using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
 using ReferenceAnalyzer.UI.Models;
+using ReferenceAnalyzer.UI.Resources;
 using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using ReferenceAnalyzer.UI.Views;
@@ -18,6 +19,7 @@ namespace ReferenceAnalyzer.UI
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+            Styles.Add(new Theme());
         }
 
         public override void OnFrameworkInitializationCompleted()
