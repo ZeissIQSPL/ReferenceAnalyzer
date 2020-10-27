@@ -7,11 +7,11 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
 {
     public class ReferencesEditor : IReferencesEditor
     {
-        private readonly IProjectAccess _projectAccess;
+        private readonly CachedProjectAccess _projectAccess;
 
         public ReferencesEditor(IProjectAccess projectAccess)
         {
-            _projectAccess = projectAccess;
+            _projectAccess = new CachedProjectAccess(projectAccess);
         }
 
         private XDocument GetProjectContent(string projectPath)
@@ -23,7 +23,8 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
         public IEnumerable<string> GetReferencedProjects(string projectPath)
         {
             return GetReferencedProjectsPaths(projectPath)
-                .Select(path => GetOutputAssemblyName(path) ?? Path.GetFileNameWithoutExtension(path));
+                .Select(path => GetOutputAssemblyName(path) ?? Path.GetFileNameWithoutExtension(path))
+                .ToList();
         }
 
         public IEnumerable<string> GetReferencedProjectsPaths(string projectPath)
@@ -54,6 +55,11 @@ namespace ReferenceAnalyzer.Core.ProjectEdit
             var root = GetProjectContent(projectPath).Root;
             return root.Descendants(WithNamespace(root, "ProjectName")).FirstOrDefault()?.Value ??
                    root.Descendants(WithNamespace(root, "AssemblyName")).FirstOrDefault()?.Value;
+        }
+
+        public void InvalidateCache()
+        {
+            _projectAccess.Invalidate();
         }
 
         public void RemoveReferencedProjects(string projectPath, IEnumerable<string> projects)
