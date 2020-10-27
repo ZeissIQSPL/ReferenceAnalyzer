@@ -35,17 +35,17 @@ namespace ReferenceAnalyzer.UI.ViewModels
         public ReadOnlyObservableCollection<string> LastSolutions => _lastSolutions;
         private void SetupSettings(ISettings settings)
         {
-            //_path = settings.SolutionPath;
+            _path = settings.SolutionPath;
 
-            //this.WhenAnyValue(viewModel => viewModel.Path)
-            //    .Subscribe(x => settings.SolutionPath = x);
+            this.WhenAnyValue(viewModel => viewModel.Path)
+                .Subscribe(x => settings.SolutionPath = x);
 
-            //var solutions = new SourceList<string>();
-            //settings.LastLoadedSolutions.Subscribe(Observer.Create<string>(o => solutions.Add(o)));
-            //solutions.Connect().Bind(out _lastSolutions).Subscribe();
+            var solutions = new SourceList<string>();
+            settings.LastLoadedSolutions.Subscribe(Observer.Create<string>(o => solutions.Add(o)));
+            solutions.Connect().Bind(out _lastSolutions).Subscribe();
 
-            //this.WhenAnyValue(viewModel => viewModel.Path)
-            //    .Subscribe(x => { settings.SolutionPath = x; solutions.Add(x); });
+            this.WhenAnyValue(viewModel => viewModel.Path)
+                .Subscribe(x => { settings.SolutionPath = x; solutions.Add(x); });
 
         }
         private void SetupPickSolutionFile(ISolutionFilepathPicker solutionFilepathPicker)
