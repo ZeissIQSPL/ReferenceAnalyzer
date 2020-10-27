@@ -38,8 +38,9 @@ namespace ReferenceAnalyzer.UI.Views
                     viewModel => viewModel.LastSolutions,
                     view => view.LastLoadedSolutions.Items)
                 .DisposeWith(disposableRegistration);
-            });
 
+
+            });
 
         }
 
