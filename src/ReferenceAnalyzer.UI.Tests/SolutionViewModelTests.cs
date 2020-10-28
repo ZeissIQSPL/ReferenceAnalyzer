@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DynamicData.Binding;
@@ -76,6 +77,48 @@ namespace ReferenceAnalyzer.UI.Tests
             _sut.PickSolutionFile.Execute().Subscribe();
 
             _sut.Path.Should().Be(expectedPath);
+        }
+
+        [Fact]
+        public void LoadingSixthPathDoesntExpandListPastFive()
+        {
+            PopulateLastSolutions();
+            _sut.LastSolutions.Count.Should().Be(5);
+        }
+        [Fact]
+        public void LoadingSixthPathMakesFirstPathTheFirstLoaded()
+        {
+            PopulateLastSolutions();
+
+            const string expected = "newPath";
+            _sut.Path = expected;
+
+            _sut.LastSolutions.First().Should().Be(expected);
+        }
+
+        [Fact]
+        public void SettingsAreSavedAfterChangingPath()
+        {
+            _sut.Path = "newPath";
+            _settingsMock.Verify(x => x.SaveSettings());
+        }
+
+        [Fact]
+        public void SettingsAreNotSavedAfterChangingPathToTheSamePath()
+        {
+            _sut.Path = "newPath";
+            _settingsMock.Reset();
+            _sut.Path = "newPath";
+
+            _settingsMock.Verify(x => x.SaveSettings(), Times.Never);
+        }
+
+        private void PopulateLastSolutions()
+        {
+            for (var i = 0; i < 5; i++)
+            {
+                _sut.Path = $"{i}";
+            }
         }
     }
 }
