@@ -27,5 +27,6 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <Button Name="ClearList" DockPanel.Dock="Top">Clear</Button>
     </StackPanel>
 </rxui:ReactiveUserControl>
