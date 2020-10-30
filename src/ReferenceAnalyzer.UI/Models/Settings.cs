@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Text.Json;
+using DynamicData;
 using DynamicData.Binding;
 using Microsoft.VisualBasic;
 
@@ -13,17 +14,16 @@ namespace ReferenceAnalyzer.UI.Models
 {
     public class Settings : ISettings
     {
-        private const string SolutionPathKey = "SolutionPath";
         private const string LastSolutionsKey = "LastSolutions";
         private readonly Configuration _configuration;
-        private ObservableCollectionExtended<string> _lastLoadedSolutions;
+
         public Settings()
         {
             _configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            _lastLoadedSolutions = LoadSettings();
+            LastLoadedSolutions = LoadSettings();
         }
 
-        public ObservableCollectionExtended<string> LastLoadedSolutions => _lastLoadedSolutions;
+        public ObservableCollectionExtended<string> LastLoadedSolutions { get; }
 
         private ObservableCollectionExtended<string> LoadSettings()
         {
@@ -34,17 +34,12 @@ namespace ReferenceAnalyzer.UI.Models
             }
             var list = JsonSerializer.Deserialize<ObservableCollectionExtended<string>>(serializedJson);
             var observableCollection = new ObservableCollectionExtended<string>();
-            foreach (var v in list)
-            {
-                if (v != null)
-                    observableCollection.Add(v);
-            }
+            observableCollection.AddRange(list);
             return observableCollection;
         }
 
         public void SaveSettings()
         {
-
             var settings = _configuration.AppSettings.Settings;
             if (settings[LastSolutionsKey]?.Value == null)
                 settings.Add(LastSolutionsKey, JsonSerializer.Serialize(LastLoadedSolutions));
@@ -54,7 +49,6 @@ namespace ReferenceAnalyzer.UI.Models
             }
 
             _configuration.Save(ConfigurationSaveMode.Modified);
-
         }
     }
 }

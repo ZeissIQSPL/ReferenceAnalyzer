@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -16,7 +14,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
     public class SolutionViewModel : ReactiveObject, ISolutionViewModel
     {
-        private const int LAST_SOLUTION_LIST_LIMIT = 5;
+        private const int LastSolutionListLimit = 5;
         private string _path;
         private string _selectedPath;
         private ReadOnlyObservableCollection<string> _lastSolutions;
@@ -43,8 +41,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedPath, value);
         }
 
-
-
         private void SetupSettings(ISettings settings)
         {
             settings.LastLoadedSolutions.ToObservableChangeSet()
@@ -65,19 +61,16 @@ namespace ReferenceAnalyzer.UI.ViewModels
             var count = settings.LastLoadedSolutions.Count;
             if (!settings.LastLoadedSolutions.Contains(newSolution))
             {
-                if (count > LAST_SOLUTION_LIST_LIMIT)
-                {
+                if (count > LastSolutionListLimit)
                     settings.LastLoadedSolutions.RemoveAt(0);
-                }
-                settings.LastLoadedSolutions.Add(newSolution);
-                settings.SaveSettings();
-            } else
+            }
+            else
             {
                 var index = settings.LastLoadedSolutions.IndexOf(newSolution);
                 settings.LastLoadedSolutions.RemoveAt(index);
-                settings.LastLoadedSolutions.Add(newSolution);
-                settings.SaveSettings();
             }
+            settings.LastLoadedSolutions.Add(newSolution);
+            settings.SaveSettings();
         }
 
         private void SetupPickSolutionFile(ISolutionFilepathPicker solutionFilepathPicker)
