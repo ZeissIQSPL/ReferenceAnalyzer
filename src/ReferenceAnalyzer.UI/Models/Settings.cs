@@ -32,10 +32,7 @@ namespace ReferenceAnalyzer.UI.Models
             {
                 return new ObservableCollectionExtended<string>();
             }
-            var list = JsonSerializer.Deserialize<ObservableCollectionExtended<string>>(serializedJson);
-            var observableCollection = new ObservableCollectionExtended<string>();
-            observableCollection.AddRange(list);
-            return observableCollection;
+            return JsonSerializer.Deserialize<ObservableCollectionExtended<string>>(serializedJson);
         }
 
         public void SaveSettings()
