@@ -16,7 +16,13 @@
     <AvaloniaResource Remove="Assets\MessageSink.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Assets\Theme.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Views\SolutionView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\Theme.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />

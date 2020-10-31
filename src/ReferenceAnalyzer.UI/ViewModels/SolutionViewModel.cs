@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using DynamicData;
 using DynamicData.Binding;
@@ -63,11 +64,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
             {
                 if (count > LastSolutionListLimit)
                     settings.LastLoadedSolutions.RemoveAt(0);
-            }
-            else
-            {
-                var index = settings.LastLoadedSolutions.IndexOf(newSolution);
-                settings.LastLoadedSolutions.RemoveAt(index);
             }
             settings.LastLoadedSolutions.Add(newSolution);
             settings.SaveSettings();
