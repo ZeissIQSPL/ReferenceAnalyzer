@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using ReactiveUI;
-using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
 using ReferenceAnalyzer.UI.Models;

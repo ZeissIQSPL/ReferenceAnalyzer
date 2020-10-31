@@ -11,7 +11,6 @@ using DynamicData.Binding;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.ProjectEdit;
-using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.UI.Services;
 
 namespace ReferenceAnalyzer.UI.ViewModels
@@ -218,14 +217,12 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 canRemove);
 
             RemoveAllUnused = ReactiveCommand.CreateFromTask<IEnumerable<ReferencesReport>, Unit>(async reports =>
-            {
-                await Task.WhenAll(reports.Select(report => RemoveReferences(report, editor)));
-                return Unit.Default;
-            },
+                {
+                    await Task.WhenAll(reports.Select(report => RemoveReferences(report, editor)));
+                    return Unit.Default;
+                },
                 this.WhenAnyValue(x => x.Reports.Count, count => count > 0));
         }
-
-
 
         private Task<Unit> RemoveReferences(ReferencesReport report, IReferencesEditor editor)
         {
@@ -236,7 +233,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         private async Task<IEnumerable<string>> LoadProjects(IReferenceAnalyzer analyzer) =>
             await analyzer.Load(SolutionViewModel.Path);
-
 
         private async Task AnalyzeReferences(IReferenceAnalyzer analyzer,
             IObserver<ReferencesReport> observer,

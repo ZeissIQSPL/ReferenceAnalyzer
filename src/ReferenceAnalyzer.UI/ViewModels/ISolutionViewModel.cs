@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
-using DynamicData.Binding;
 using ReactiveUI;
 
 namespace ReferenceAnalyzer.UI.ViewModels
