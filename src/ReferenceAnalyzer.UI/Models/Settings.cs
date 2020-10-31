@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Configuration;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Subjects;
 using System.Text.Json;
-using DynamicData;
 using DynamicData.Binding;
-using Microsoft.VisualBasic;
 
 namespace ReferenceAnalyzer.UI.Models
 {
@@ -41,9 +33,7 @@ namespace ReferenceAnalyzer.UI.Models
             if (settings[LastSolutionsKey]?.Value == null)
                 settings.Add(LastSolutionsKey, JsonSerializer.Serialize(LastLoadedSolutions));
             else
-            {
                 settings[LastSolutionsKey].Value = JsonSerializer.Serialize(LastLoadedSolutions);
-            }
 
             _configuration.Save(ConfigurationSaveMode.Modified);
         }

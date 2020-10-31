@@ -8,14 +8,12 @@ using FluentAssertions;
 using Microsoft.Reactive.Testing;
 using Moq;
 using ReactiveUI.Testing;
-using ReferenceAnalyzer.UI.Models;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
 using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
-using System.Collections.Immutable;
 using System.Threading;
 
 namespace ReferenceAnalyzer.UI.Tests
