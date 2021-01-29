@@ -238,7 +238,7 @@ namespace ReferenceAnalyzer.Core
 
             foreach (var project in projects)
             {
-                yield return await Analyze(project, token);
+                yield return await Task.Run(() => Analyze(project, token), token);
                 ProgressReporter.Report((double)++analyzedProjects / totalProjects);
             }
         }

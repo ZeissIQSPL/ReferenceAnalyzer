@@ -66,7 +66,7 @@ namespace ReferenceAnalyzer.Core.Tests
         }
 
         private static string GetTestSamplesLocation() =>
-            Assembly.GetExecutingAssembly().CodeBase?.Split("src")[0] + "test_samples";
+            Assembly.GetExecutingAssembly().Location?.Split("src")[0] + "test_samples";
 
         [When(@"I run analysis for (.*)")]
         public void WhenIRunAnalysis(string target) => _result = _sut.Analyze(target).Result;

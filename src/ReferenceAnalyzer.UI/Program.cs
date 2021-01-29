@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 
 namespace ReferenceAnalyzer.UI
@@ -16,7 +15,7 @@ namespace ReferenceAnalyzer.UI
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .LogToDebug()
+                .LogToTrace()
                 .UseReactiveUI();
     }
 }
