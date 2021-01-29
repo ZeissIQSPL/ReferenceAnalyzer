@@ -40,7 +40,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
             SolutionViewModel = solutionViewModel;
             _tokenSource = new CancellationTokenSource();
-            
+
             ConfigureAnalyzer(analyzer);
             SetupCommands(analyzer, editor);
             SetupProperties(analyzer);
@@ -117,9 +117,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Select(_ => MessageSink.Lines)
                 .Subscribe(lines => Log = string.Join('\n', lines));
         }
-
-      
-
+        
         private void SetupProperties(IReferenceAnalyzer analyzer)
         {
 

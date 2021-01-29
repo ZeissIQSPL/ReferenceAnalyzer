@@ -1,33 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0" PrivateAssets="All" />
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <GlobalPackageReference Include="JetBrains.Annotations" Version="2020.1.0" PrivateAssets="All" />
-    <PackageReference Update="Avalonia" Version="0.9.12" />
-    <PackageReference Update="Avalonia.Desktop" Version="0.9.12" />
-    <PackageReference Update="Avalonia.ReactiveUI" Version="0.9.12" />
-    <PackageReference Update="coverlet.collector" Version="1.3.0" />
+    <GlobalPackageReference Include="JetBrains.Annotations" Version="2020.3.0" PrivateAssets="All" />
+    <PackageReference Update="Avalonia" Version="0.10.0" />
+    <PackageReference Update="Avalonia.Desktop" Version="0.10.0" />
+    <PackageReference Update="Avalonia.ReactiveUI" Version="0.10.0" />
+    <PackageReference Update="coverlet.collector" Version="3.0.2" />
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
-    <PackageReference Update="MessageBox.Avalonia" Version="0.9.6.1" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.7.1" />
-    <PackageReference Update="Moq" Version="4.14.5" />
-    <PackageReference Update="ReactiveUI.Testing" Version="11.5.35" />
-    <PackageReference Update="SpecFlow.Tools.MsBuild.Generation" Version="3.4.8" />
-    <PackageReference Update="SpecFlow.xUnit" Version="3.4.8" />
-    <PackageReference Update="SpecFlow" Version="3.4.8" />
+    <PackageReference Update="MessageBox.Avalonia" Version="1.0.1" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Update="Moq" Version="4.16.0" />
+    <PackageReference Update="ReactiveUI.Testing" Version="13.1.1" />
+    <PackageReference Update="SpecFlow.Tools.MsBuild.Generation" Version="3.6.23" />
+    <PackageReference Update="SpecFlow.xUnit" Version="3.6.23" />
+    <PackageReference Update="SpecFlow" Version="3.6.23" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
     <PackageReference Update="xunit" Version="2.4.1" />
-    <PackageReference Update="Microsoft.Net.Compilers.Toolset" Version="3.7.0" PrivateAssets="All" />
-    <PackageReference Update="Microsoft.Build.Locator" Version="1.2.6" />
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.7.0" />
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.7.0" />
-    <PackageReference Update="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.7.0" />
-    <PackageReference Update="NuGet.ProjectModel" Version="5.7.0" />
-    <PackageReference Update="NuGet.Frameworks" Version="5.7.0" />
-    <PackageReference Update="ReactiveUI.Events.WPF" Version="11.4.1" />
-    <PackageReference Update="ReactiveUI.WPF" Version="11.4.1" />
-    <PackageReference Update="ReactiveUI" Version="11.4.1" />
-    <PackageReference Update="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Update="Microsoft.Net.Compilers.Toolset" Version="3.8.0" PrivateAssets="All" />
+    <PackageReference Update="Microsoft.Build.Locator" Version="1.4.1" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.8.0" />
+    <PackageReference Update="NuGet.ProjectModel" Version="5.8.1" />
+    <PackageReference Update="NuGet.Frameworks" Version="5.8.1" />
+    <PackageReference Update="System.Configuration.ConfigurationManager" Version="5.0.0" />
   </ItemGroup>
 </Project>
