@@ -1,0 +1,17 @@
+<rxui:ReactiveUserControl
+    x:Class="ReferenceAnalyzer.UI.Views.ProjectView"
+    x:TypeArguments="vm:ProjectViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="clr-namespace:ReferenceAnalyzer.UI.ViewModels;assembly=ReferenceAnalyzer.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:ReferenceAnalyzer.Core;assembly=ReferenceAnalyzer.Core"
+    xmlns:system="clr-namespace:System;assembly=System.Runtime"
+    xmlns:rxui="http://reactiveui.net"
+    mc:Ignorable="d" >
+
+    <StackPanel Margin="8">
+        <TextBlock Name="ProjectName" />
+    </StackPanel>
+</rxui:ReactiveUserControl>

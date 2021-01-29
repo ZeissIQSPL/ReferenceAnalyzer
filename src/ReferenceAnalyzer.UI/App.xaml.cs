@@ -24,6 +24,7 @@ namespace ReferenceAnalyzer.UI
         public override void OnFrameworkInitializationCompleted()
         {
             Locator.CurrentMutable.Register(() => new SolutionView(), typeof(IViewFor<ISolutionViewModel>));
+            Locator.CurrentMutable.Register(() => new ProjectView(), typeof(IViewFor<ProjectViewModel>));
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var messageSink = new MessageSink();

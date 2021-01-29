@@ -44,5 +44,15 @@
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Update="Views\ProjectView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\ProjectView.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+  </ItemGroup>
   <Import Project="$(SolutionDir)ReferenceAnalyzer.Common.targets" />
 </Project>

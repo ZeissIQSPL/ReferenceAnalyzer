@@ -42,11 +42,6 @@
                 <TextBlock Name="Logs" TextWrapping="Wrap"/>
             </ScrollViewer>
             <ListBox Name="Projects" DockPanel.Dock="Bottom">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}"/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
         <DockPanel Grid.Column="1">

@@ -90,6 +90,9 @@ namespace ReferenceAnalyzer.UI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _whitelist, value);
         }
 
+        public IEnumerable<ProjectViewModel> ProjectViewModels =>
+            new List<ProjectViewModel>() {new ProjectViewModel("a"), new ProjectViewModel("b") {State = ProcessingState.Finished}};
+
         private void ConfigureAnalyzer(IReferenceAnalyzer analyzer)
         {
             analyzer.BuildProperties = new Dictionary<string, string>
@@ -241,5 +244,24 @@ namespace ReferenceAnalyzer.UI.ViewModels
             return analyzer.Analyze(projects, _tokenSource.Token)
                 .SubscribeOn(RxApp.TaskpoolScheduler);
         }
+    }
+
+    public enum ProcessingState
+    {
+        NotStarted,
+        InProgress,
+        Finished
+    }
+
+    public class ProjectViewModel
+    {
+        public ProjectViewModel(string name)
+        {
+            Name = name;
+        }
+
+        public ProcessingState State { get; set; }
+
+        public string Name { get; }
     }
 }
