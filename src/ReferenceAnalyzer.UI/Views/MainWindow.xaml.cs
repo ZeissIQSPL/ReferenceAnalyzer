@@ -54,11 +54,6 @@ namespace ReferenceAnalyzer.UI.Views
                         view => view.Whitelist.Text)
                     .DisposeWith(disposableRegistration);
 
-                this.OneWayBind(ViewModel,
-                        viewModel => viewModel.ProjectViewModels,
-                        view => view.Projects.Items)
-                    .DisposeWith(disposableRegistration);
-
                 BindCommands(disposableRegistration);
                 BindLists(disposableRegistration);
             });
@@ -103,10 +98,10 @@ namespace ReferenceAnalyzer.UI.Views
                     view => view.Projects.SelectedItem)
                 .DisposeWith(disposableRegistration);
 
-            //this.OneWayBind(ViewModel,
-            //        viewModel => viewModel.Projects,
-            //        view => view.Projects.Items)
-            //    .DisposeWith(disposableRegistration);
+            this.OneWayBind(ViewModel,
+                    viewModel => viewModel.Projects,
+                    view => view.Projects.Items)
+                .DisposeWith(disposableRegistration);
 
             this.OneWayBind(ViewModel,
                     viewModel => viewModel.SelectedProjectReport.ActualReferences,
@@ -140,8 +135,7 @@ namespace ReferenceAnalyzer.UI.Views
 
             this.BindCommand(ViewModel,
                     viewModel => viewModel.Analyze,
-                    view => view.AnalyzeAllCommand,
-                    viewModel => viewModel.Projects)
+                    view => view.AnalyzeAllCommand)
                 .DisposeWith(disposableRegistration);
 
             this.BindCommand(ViewModel,

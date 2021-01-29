@@ -7,7 +7,10 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DynamicData;
+using DynamicData.Alias;
 using DynamicData.Binding;
+using Microsoft.CodeAnalysis.CSharp;
+using NuGet.Versioning;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.Models;
@@ -18,7 +21,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private ReadOnlyObservableCollection<Project> _projects;
+        private ReadOnlyObservableCollection<ProjectViewModel> _projects;
         private bool _stopOnError;
         private Project _selectedProject = Project.Empty;
         private string _log;
@@ -49,7 +52,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         public IReadableMessageSink MessageSink { get; set; }
 
-        public ReadOnlyObservableCollection<Project> Projects => _projects;
+        public ReadOnlyObservableCollection<ProjectViewModel> Projects => _projects;
 
         public ReactiveCommand<Unit, IEnumerable<Project>> Load { get; private set; }
         public ReactiveCommand<Unit, Unit> Cancel { get; private set; }
@@ -89,9 +92,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
             get => _whitelist;
             set => this.RaiseAndSetIfChanged(ref _whitelist, value);
         }
-
-        public IEnumerable<ProjectViewModel> ProjectViewModels =>
-            new List<ProjectViewModel>() {new ProjectViewModel("a"), new ProjectViewModel("b") {State = ProcessingState.Finished}};
 
         private void ConfigureAnalyzer(IReferenceAnalyzer analyzer)
         {
@@ -157,6 +157,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe(_ => projects.Clear());
 
             projects.Connect()
+                .Select(s => new ProjectViewModel(s))
                 .Bind(out _projects)
                 .Subscribe();
 
