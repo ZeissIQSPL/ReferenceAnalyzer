@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ReferenceAnalyzer.Core.Models;
 
 namespace ReferenceAnalyzer.Core
 {
@@ -19,7 +20,7 @@ namespace ReferenceAnalyzer.Core
             _ignoreRules = ignoreRules;
         }
 
-        public ConcurrentBag<ReferenceOccurrence> Occurrences { get; } = new ConcurrentBag<ReferenceOccurrence>();
+        public ConcurrentBag<ReferenceOccurrence> Occurrences { get; } = new();
 
         public override void VisitClassDeclaration(ClassDeclarationSyntax node)
         {

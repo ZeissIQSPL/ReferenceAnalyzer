@@ -15,6 +15,7 @@ using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
 using System.Threading;
+using ReferenceAnalyzer.Core.Models;
 
 namespace ReferenceAnalyzer.UI.Tests
 {
@@ -29,6 +30,7 @@ namespace ReferenceAnalyzer.UI.Tests
         private Mock<IReferencesEditor> _editor;
         private Mock<IReadableMessageSink> _sinkMock;
         private Mock<ISolutionViewModel> _solutionViewModel;
+
         public MainWindowViewModelTests()
         {
             SetupAnalyzer();
@@ -60,7 +62,7 @@ namespace ReferenceAnalyzer.UI.Tests
             _analyzerMock = new Mock<IReferenceAnalyzer>();
             var referencedProjects = new List<ActualReference>
             {
-                new ActualReference("project1", Enumerable.Empty<ReferenceOccurrence>())
+                new("project1", Enumerable.Empty<ReferenceOccurrence>())
             };
 
             _analyzerMock.Setup(m => m.Load(It.IsAny<string>(), It.IsAny<CancellationToken>()))

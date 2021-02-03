@@ -44,7 +44,7 @@
             <ListBox Name="Projects" DockPanel.Dock="Bottom">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding}"/>
+                        <TextBlock Text="{Binding Name}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -54,7 +54,7 @@
             <ListBox Name="DefinedReferences" DockPanel.Dock="Top">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding}"/>
+                    <TextBlock Text="{Binding Target}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
@@ -74,7 +74,7 @@
             <ListBox Name="DiffReferences" Grid.Column="3">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding}"/>
+                        <TextBlock Text="{Binding Target}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

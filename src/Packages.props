@@ -25,5 +25,6 @@
     <PackageReference Update="NuGet.ProjectModel" Version="5.8.1" />
     <PackageReference Update="NuGet.Frameworks" Version="5.8.1" />
     <PackageReference Update="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Update="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using ReferenceAnalyzer.Core.Models;
 using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
 using TechTalk.SpecFlow;

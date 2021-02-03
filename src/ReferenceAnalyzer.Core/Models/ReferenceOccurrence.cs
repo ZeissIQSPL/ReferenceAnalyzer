@@ -1,16 +1,8 @@
 using Microsoft.CodeAnalysis;
 
-namespace ReferenceAnalyzer.Core
+namespace ReferenceAnalyzer.Core.Models
 {
-    public class ReferenceOccurrence
+    public record ReferenceOccurrence(ITypeSymbol UsedType, ReferenceLocation Location)
     {
-        public ReferenceOccurrence(ITypeSymbol usedType, ReferenceLocation location)
-        {
-            UsedType = usedType;
-            Location = location;
-        }
-
-        public ITypeSymbol UsedType { get; }
-        public ReferenceLocation Location { get; }
     }
 }
