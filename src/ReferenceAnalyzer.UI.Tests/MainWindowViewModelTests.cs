@@ -181,8 +181,8 @@ namespace ReferenceAnalyzer.UI.Tests
 
             _sut.SelectedProject = _sut.Projects.First();
 
-            _sut.SelectedProjectReport.Should().NotBeNull();
-            _sut.SelectedProjectReport.Should().Be(await _reports.First().Report);
+            _sut.SelectedProject.Should().NotBeNull();
+            _sut.SelectedProject.Should().Be(_reports.First().Project);
         }
 
         [Fact]
