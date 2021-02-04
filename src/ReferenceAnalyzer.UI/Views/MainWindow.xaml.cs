@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using Avalonia.Controls;
@@ -153,7 +154,7 @@ namespace ReferenceAnalyzer.UI.Views
             this.BindCommand(ViewModel,
                     viewModel => viewModel.RemoveAllUnused,
                     view => view.RemoveAllUnusedCommand,
-                    viewModel => viewModel.Reports)
+                    viewModel => viewModel.Projects)
                 .DisposeWith(disposableRegistration);
 
         }

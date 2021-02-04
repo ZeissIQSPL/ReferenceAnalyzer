@@ -1,6 +1,6 @@
 namespace ReferenceAnalyzer.Core.Models
 {
-    public record ReferenceLocation
+    public record Reference(string Target)
     {
     }
 }

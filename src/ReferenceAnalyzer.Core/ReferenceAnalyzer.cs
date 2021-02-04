@@ -1,15 +1,18 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
+using ReferenceAnalyzer.Core.Models;
 using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
+using Project = ReferenceAnalyzer.Core.Models.Project;
 
 namespace ReferenceAnalyzer.Core
 {
@@ -18,8 +21,7 @@ namespace ReferenceAnalyzer.Core
         private readonly IMessageSink _messageSink;
         private readonly IReferencesEditor _editor;
         private readonly IXamlReferencesReader _xamlReferencesReader;
-        private List<Project> _projects = new List<Project>();
-        private const int IndefiniteProgress = -1;
+        private List<Microsoft.CodeAnalysis.Project> _projects = new();
 
         public ReferenceAnalyzer(IMessageSink messageSink, IReferencesEditor editor,
             IXamlReferencesReader xamlReferencesReader)
@@ -34,20 +36,6 @@ namespace ReferenceAnalyzer.Core
 
         public IDictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
         public bool ThrowOnCompilationFailures { get; set; } = true;
-        public IProgress<double> ProgressReporter { get; set; } = new Progress<double>();
-
-        public IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath)
-        {
-            return AnalyzeAll(solutionPath, CancellationToken.None);
-        }
-
-        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll(string solutionPath,
-            [EnumeratorCancellation] CancellationToken token)
-        {
-            await Load(solutionPath, token);
-            await foreach (var a in AnalyzeAll(token))
-                yield return a;
-        }
 
         private static void InitializeMsBuild()
         {
@@ -58,16 +46,13 @@ namespace ReferenceAnalyzer.Core
             MSBuildLocator.RegisterInstance(instance);
         }
 
-        public async Task<IEnumerable<string>> Load(string solution)
+        public async Task<IEnumerable<Project>> Load(string solution)
         {
             return await Load(solution, CancellationToken.None);
         }
 
-        public async Task<IEnumerable<string>> Load(string solution, CancellationToken token)
+        public async Task<IEnumerable<Project>> Load(string solution, CancellationToken token)
         {
-            ProgressReporter.Report(IndefiniteProgress);
-            token.Register(() => ProgressReporter.Report(0));
-
             _editor.InvalidateCache();
 
             using var workspace = MSBuildWorkspace.Create(BuildProperties);
@@ -91,24 +76,18 @@ namespace ReferenceAnalyzer.Core
                 .OrderBy(p => p.Name)
                 .ToList();
 
-            ProgressReporter.Report(1);
-
-            return _projects.Select(p => p.Name);
+            return _projects.Select(p => new Project(p.Name,
+                p.FilePath ?? throw new InvalidOperationException("Loaded project that is not on disk")));
         }
 
-        public async Task<ReferencesReport> Analyze(string target)
+        public async Task<ReferencesReport> Analyze(Project target, CancellationToken token)
         {
-            return await Analyze(target, CancellationToken.None);
-        }
-
-        public async Task<ReferencesReport> Analyze(string target, CancellationToken token)
-        {
-            var project = _projects.First(p => p.Name == target);
+            var project = _projects.First(p => p.Name == target.Name);
 
             return await Analyze(project, token);
         }
 
-        private async Task<ReferencesReport> Analyze(Project project, CancellationToken token)
+        private async Task<ReferencesReport> Analyze(Microsoft.CodeAnalysis.Project project, CancellationToken token)
         {
             if (project.FilePath == null)
                 throw new InvalidOperationException("Attempted to analyze project without a disk path");
@@ -141,7 +120,6 @@ namespace ReferenceAnalyzer.Core
                 .GroupBy(o => o.UsedType.ContainingAssembly)
                 .Where(g => g.Key != null);
 
-
             var actualReferences = groupedAssemblies
                 .Select(g => new ActualReference(g.Key.Name, g))
                 .Concat(xamlReferences
@@ -151,15 +129,15 @@ namespace ReferenceAnalyzer.Core
                 .OrderBy(r => r.Target)
                 .ToList();
 
-
             var definedReferences = _editor.GetReferencedProjects(project.FilePath)
-                .OrderBy(n => n)
+                .Select(p => new Reference(p))
+                .OrderBy(n => n.Target)
                 .ToList();
 
-            return new ReferencesReport(project.Name, definedReferences, actualReferences, project.FilePath);
+            return new ReferencesReport(definedReferences, actualReferences);
         }
 
-        private IEnumerable<string> GetXamlReferences(Project project)
+        private IEnumerable<string> GetXamlReferences(Microsoft.CodeAnalysis.Project project)
         {
             var xamlFiles = Directory.GetParent(project.FilePath)
                 .GetFiles("*.xaml", SearchOption.AllDirectories)
@@ -171,7 +149,7 @@ namespace ReferenceAnalyzer.Core
             return xamlReferences;
         }
 
-        private async Task<Compilation> GetCompilation(Project project, string outputPath, CancellationToken token)
+        private async Task<Compilation> GetCompilation(Microsoft.CodeAnalysis.Project project, string outputPath, CancellationToken token)
         {
             var compilation = await project.GetCompilationAsync(token);
             var referencedProjects = _editor.GetReferencedProjects(project.FilePath!);
@@ -208,39 +186,22 @@ namespace ReferenceAnalyzer.Core
             return compilation;
         }
 
-        public IAsyncEnumerable<ReferencesReport> AnalyzeAll()
+        public IObservable<Analysis> Analyze(IEnumerable<Project> projects, CancellationToken token)
         {
-            return AnalyzeAll(CancellationToken.None);
-        }
-
-        public async IAsyncEnumerable<ReferencesReport> AnalyzeAll([EnumeratorCancellation] CancellationToken token)
-        {
-            await foreach (var report in Analyze(_projects.Select(p => p.Name), token))
-                yield return report;
-        }
-
-        public IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects)
-        {
-            return Analyze(projects, CancellationToken.None);
-        }
-
-        public async IAsyncEnumerable<ReferencesReport> Analyze(IEnumerable<string> projects,
-            [EnumeratorCancellation] CancellationToken token)
-        {
-            if (projects == null)
-                throw new ArgumentNullException(nameof(projects));
-
-            token.Register(() => ProgressReporter.Report(0));
-
-            var analyzedProjects = 0;
-            var totalProjects = projects.Count();
-            ProgressReporter.Report(IndefiniteProgress);
-
-            foreach (var project in projects)
-            {
-                yield return await Task.Run(() => Analyze(project, token), token);
-                ProgressReporter.Report((double)++analyzedProjects / totalProjects);
-            }
+            var collection = new BlockingCollection<Project>(5);
+            return projects.ToList()
+                .ToObservable()
+                .Select(project =>
+                {
+                    collection.Add(project, token);
+                    var observable = Observable.FromAsync(async () =>
+                    {
+                        var result = await Task.Run(() => Analyze(project, token), token).ConfigureAwait(false);
+                        collection.Take(token);
+                        return result;
+                    });
+                    return new Analysis(project, observable);
+                });
         }
     }
 }

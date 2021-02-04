@@ -1,27 +1,23 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ReferenceAnalyzer.Core
+namespace ReferenceAnalyzer.Core.Models
 {
-    public class ReferencesReport
+    public record ReferencesReport
     {
-        public ReferencesReport(string project, IEnumerable<string> definedReferences,
-            IEnumerable<ActualReference> actualReferences, string projectPath)
+        public ReferencesReport(IEnumerable<Reference> definedReferences,
+            IEnumerable<ActualReference> actualReferences)
         {
-            Project = project;
             DefinedReferences = definedReferences;
             ActualReferences = actualReferences;
-            ProjectPath = projectPath;
         }
 
         public IEnumerable<ActualReference> ActualReferences { get; }
-        public string Project { get; }
-        public string ProjectPath { get; }
-        public IEnumerable<string> DefinedReferences { get; }
+        public IEnumerable<Reference> DefinedReferences { get; }
 
-        public IEnumerable<string> DiffReferences => DefinedReferences
-            .Except(ActualReferences.Select(r => r.Target));
-
+        public IEnumerable<Reference> DiffReferences => DefinedReferences
+            .Except(ActualReferences);
 
         public int ReferencesTo(string target)
         {
@@ -30,12 +26,8 @@ namespace ReferenceAnalyzer.Core
             return reference == null ? 0 : reference.Occurrences.Count();
         }
 
-        public override string ToString() => Project;
-
-        public static ReferencesReport Empty() =>
-            new ReferencesReport("empty report",
-                Enumerable.Empty<string>(),
-                Enumerable.Empty<ActualReference>(),
-                "");
+        public static ReferencesReport Empty =>
+            new(Enumerable.Empty<Reference>(),
+                Enumerable.Empty<ActualReference>());
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Reactive.Testing;
@@ -15,6 +16,7 @@ using ReferenceAnalyzer.UI.Services;
 using ReferenceAnalyzer.UI.ViewModels;
 using Xunit;
 using System.Threading;
+using ReferenceAnalyzer.Core.Models;
 
 namespace ReferenceAnalyzer.UI.Tests
 {
@@ -23,12 +25,15 @@ namespace ReferenceAnalyzer.UI.Tests
         private const string Path = "samplePath";
         private Mock<IReferenceAnalyzer> _analyzerMock;
         private MainWindowViewModel _sut;
-        private IEnumerable<ReferencesReport> _reports;
+        private IEnumerable<Analysis> _reports;
         private TestScheduler _scheduler;
         private string _receivedPopupMessage;
         private Mock<IReferencesEditor> _editor;
         private Mock<IReadableMessageSink> _sinkMock;
         private Mock<ISolutionViewModel> _solutionViewModel;
+        private Project _project1;
+        private Project _project2;
+
         public MainWindowViewModelTests()
         {
             SetupAnalyzer();
@@ -60,25 +65,27 @@ namespace ReferenceAnalyzer.UI.Tests
             _analyzerMock = new Mock<IReferenceAnalyzer>();
             var referencedProjects = new List<ActualReference>
             {
-                new ActualReference("project1", Enumerable.Empty<ReferenceOccurrence>())
+                new("project1", Enumerable.Empty<ReferenceOccurrence>())
             };
 
+            _project1 = new Project("proj1", "path1");
+            _project2 = new Project("proj2", "path2");
             _analyzerMock.Setup(m => m.Load(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(new[] {"proj1", "proj2"}.AsEnumerable()));
+                .Returns(Task.FromResult(new[] {_project1, _project2}.AsEnumerable()));
 
-            var firstReport = new ReferencesReport("proj1", new[] {"ref1", "ref2"}, referencedProjects, "anyPath");
-            var secondReport = new ReferencesReport("proj2", new[] {"ref2", "ref3"}, Enumerable.Empty<ActualReference>(), "anyPath");
+            var firstReport = new ReferencesReport(new[] {new Reference("ref1"), new Reference("ref2")}, referencedProjects);
+            var secondReport = new ReferencesReport(new[] {new Reference("ref2"), new Reference("ref3")}, Enumerable.Empty<ActualReference>());
 
-            _reports = new[] {firstReport, secondReport};
+            _reports = new[] {new Analysis(_project1, Observable.Return(firstReport)), new Analysis(_project2, Observable.Return(secondReport))};
 
-            _analyzerMock.Setup(m => m.Analyze("proj1", It.IsAny<CancellationToken>()))
+            _analyzerMock.Setup(m => m.Analyze(_project1, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(firstReport));
 
-            _analyzerMock.Setup(m => m.Analyze("proj2", It.IsAny<CancellationToken>()))
+            _analyzerMock.Setup(m => m.Analyze(_project2, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(secondReport));
 
-            _analyzerMock.Setup(m => m.Analyze(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-                .Returns(_reports.ToAsync());
+            _analyzerMock.Setup(m => m.Analyze(It.IsAny<IEnumerable<Project>>(), It.IsAny<CancellationToken>()))
+                .Returns(_reports.ToObservable());
 
             _analyzerMock.Setup(m => m.Load("error_project", It.IsAny<CancellationToken>()))
                 .Throws<InvalidOperationException>();
@@ -143,10 +150,10 @@ namespace ReferenceAnalyzer.UI.Tests
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
-            _sut.Analyze.Execute(new [] {"proj1"}).Subscribe();
+            _sut.Analyze.Execute(new [] {_project1}).Subscribe();
             _scheduler.AdvanceBy(3);
 
-            _sut.SelectedProject = _sut.Reports.First().Project;
+            _sut.SelectedProject = _sut.Projects.First();
 
             _sut.SelectedProjectReport.DefinedReferences.Should().NotBeNull();
         }
@@ -164,18 +171,18 @@ namespace ReferenceAnalyzer.UI.Tests
         }
 
         [Fact]
-        public void LoadedServiceListUpdated()
+        public async void LoadedServiceListUpdated()
         {
             _sut.Load.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
-            _sut.Analyze.Execute(new[] {"proj1"}).Subscribe();
+            _sut.Analyze.Execute(new [] {_project1}).Subscribe();
             _scheduler.AdvanceBy(3);
 
-            _sut.SelectedProject = _sut.Reports.First().Project;
+            _sut.SelectedProject = _sut.Projects.First();
 
-            _sut.SelectedProjectReport.Should().NotBeNull();
-            _sut.SelectedProjectReport.Should().Be(_reports.First());
+            _sut.SelectedProject.Should().NotBeNull();
+            _sut.SelectedProject.Should().Be(_reports.First().Project);
         }
 
         [Fact]
@@ -254,13 +261,13 @@ namespace ReferenceAnalyzer.UI.Tests
             _sut.Analyze.Execute().Subscribe();
             _scheduler.AdvanceBy(3);
 
-            _sut.Reports.Should().NotBeEmpty();
+            _sut.Projects.Should().NotBeEmpty();
 
             var firstCount = _sut.Projects.Count;
             _sut.Analyze.Execute().Subscribe();
             _scheduler.AdvanceBy(4);
 
-            _sut.Reports.Count.Should().Be(firstCount);
+            _sut.Projects.Count.Should().Be(firstCount);
         }
 
         [Fact]

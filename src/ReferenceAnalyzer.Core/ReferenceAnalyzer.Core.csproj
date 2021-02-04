@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.ProjectModel" />
+    <PackageReference Include="System.Reactive" />
   </ItemGroup>
   <Import Project="$(SolutionDir)ReferenceAnalyzer.Common.targets" />
 </Project>
