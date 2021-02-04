@@ -19,6 +19,13 @@ namespace ReferenceAnalyzer.Core.Models
         public IEnumerable<Reference> DiffReferences => DefinedReferences
             .Except(ActualReferences);
 
+        public int ReferencesTo(string target)
+        {
+            var reference = ActualReferences
+                .FirstOrDefault(r => r.Target == target);
+            return reference == null ? 0 : reference.Occurrences.Count();
+        }
+
         public static ReferencesReport Empty =>
             new(Enumerable.Empty<Reference>(),
                 Enumerable.Empty<ActualReference>());

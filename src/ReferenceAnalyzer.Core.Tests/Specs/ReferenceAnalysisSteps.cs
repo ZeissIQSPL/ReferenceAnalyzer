@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
@@ -17,11 +19,10 @@ namespace ReferenceAnalyzer.Core.Tests
     public class ReferenceAnalysisSteps
     {
         private readonly ReferenceAnalyzer _sut;
-        private IEnumerable<ReferencesReport> _manyResults;
+        private IEnumerable<Analysis> _manyResults;
         private ReferencesReport _result;
         private string _sinkOutput;
-        private Mock<IProgress<double>> _progress;
-        private double _lastProgress;
+        private IEnumerable<Project> _loadedProjects;
 
         public ReferenceAnalysisSteps()
         {
@@ -51,36 +52,27 @@ namespace ReferenceAnalyzer.Core.Tests
             if (process.ExitCode != 0)
                 throw new Exception($"Could not restore, exit code {process.ExitCode}");
 
-            _sut.Load(path).Wait();
+            _loadedProjects = _sut.Load(path).Result;
         }
 
         [Given(@"I Disable throwing on errors")]
         public void WhenIDisableThrowingOnErrors() => _sut.ThrowOnCompilationFailures = false;
 
-        [Given(@"I setup progress tracking")]
-        public void GivenISetupProgressTracking()
-        {
-            _progress = new Mock<IProgress<double>>();
-            _progress.Setup(m => m.Report(It.IsAny<double>()))
-                .Callback((double v) => _lastProgress = v);
-            _sut.ProgressReporter = _progress.Object;
-        }
-
         private static string GetTestSamplesLocation() =>
             Assembly.GetExecutingAssembly().Location?.Split("src")[0] + "test_samples";
 
         [When(@"I run analysis for (.*)")]
-        public void WhenIRunAnalysis(string target) => _result = _sut.Analyze(target).Result;
+        public void WhenIRunAnalysis(string target) =>
+            _result = _sut.Analyze(new Project(target, "anyPath"), CancellationToken.None).Result;
 
         [When(@"I run full analysis")]
         public async Task WhenIRunFullAnalysis()
         {
-            var enumerable = _sut.AnalyzeAll();
-            var results = new List<ReferencesReport>();
-            await foreach (var result in enumerable)
-                results.Add(result);
+            var analysis = _sut.Analyze(_loadedProjects, CancellationToken.None);
 
-            _manyResults = results;
+            var enumerable = analysis.ToEnumerable().ToList();
+
+            _manyResults = enumerable;
         }
 
 
@@ -90,7 +82,7 @@ namespace ReferenceAnalyzer.Core.Tests
 
         [Then(@"Referenced projects should be within defined references list")]
         public void ThenReferencedProjectsShouldBeWithinDefinedReferencesList() =>
-            _result.DefinedReferences.Should().Contain(new[] {"Project2", "Project3"});
+            _result.DefinedReferences.Select(r => r.Target).Should().Contain(new[] {"Project2", "Project3"});
 
         [Then(@"Only (.*) should be in actual references")]
         public void ThenOnlyShouldBeInActualReferences(string referenceName) =>
@@ -106,22 +98,9 @@ namespace ReferenceAnalyzer.Core.Tests
         [Then(@"Reports for all three should be returned")]
         public void ThenReportsForAllThreeShouldBeReturned()
         {
-            _manyResults.Should().Contain(r => r.Project == "Project1");
-            _manyResults.Should().Contain(r => r.Project == "Project2");
-            _manyResults.Should().Contain(r => r.Project == "Project3");
+            _manyResults.Should().Contain(r => r.Project.Name == "Project1");
+            _manyResults.Should().Contain(r => r.Project.Name == "Project2");
+            _manyResults.Should().Contain(r => r.Project.Name == "Project3");
         }
-
-        [Then(@"I should receive progress report")]
-        public void ThenIShouldReceiveProgressReport()
-        {
-            _progress.Verify(m => m.Report(It.IsAny<double>()), Times.AtLeastOnce);
-        }
-
-        [Then(@"Last progress report should be complete")]
-        public void ThenLastProgressReportShouldBeComplete()
-        {
-            _lastProgress.Should().Be(1);
-        }
-
     }
 }

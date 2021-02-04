@@ -39,10 +39,3 @@ Scenario: Solution with CLR project
     And I have a solution solution_with_cpp_cli
     When I run analysis for Project1
     Then Only xunit.assert should be in actual references
-
-Scenario: Progress reporting
-    Given I have a solution two_references_one_unused
-    And I setup progress tracking
-    When I run full analysis
-    Then I should receive progress report
-    And Last progress report should be complete

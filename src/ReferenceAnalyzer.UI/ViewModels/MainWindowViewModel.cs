@@ -192,7 +192,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .ToProperty(this, vm => vm.Progress);
 
             var canAnalyzeSelected = this.WhenAnyValue(vm => vm.SelectedProject)
-                .Select(p => p is not null);
+                .Select(p => p is not null && p != Project.Empty);
 
             AnalyzeSelected = ReactiveCommand.CreateFromObservable<Project, Analysis>(p =>
                 Analyze.Execute(new[] { p }), canAnalyzeSelected);
