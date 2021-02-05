@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using ReactiveUI;
+using ReferenceAnalyzer.Core.Models;
 using ReferenceAnalyzer.Core.ProjectEdit;
 using ReferenceAnalyzer.Core.Util;
 using ReferenceAnalyzer.UI.Models;
@@ -24,7 +25,7 @@ namespace ReferenceAnalyzer.UI
         public override void OnFrameworkInitializationCompleted()
         {
             Locator.CurrentMutable.Register(() => new SolutionView(), typeof(IViewFor<ISolutionViewModel>));
-            Locator.CurrentMutable.Register(() => new ProjectView(), typeof(IViewFor<ProjectViewModel>));
+            Locator.CurrentMutable.Register(() => new ProjectView(), typeof(IViewFor<Project>));
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var messageSink = new MessageSink();

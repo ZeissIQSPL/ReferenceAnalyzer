@@ -7,10 +7,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DynamicData;
-using DynamicData.Alias;
 using DynamicData.Binding;
-using Microsoft.CodeAnalysis.CSharp;
-using NuGet.Versioning;
 using ReactiveUI;
 using ReferenceAnalyzer.Core;
 using ReferenceAnalyzer.Core.Models;
@@ -21,7 +18,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private ReadOnlyObservableCollection<ProjectViewModel> _projects;
+        private ReadOnlyObservableCollection<Project> _projects;
         private bool _stopOnError;
         private Project _selectedProject = Project.Empty;
         private string _log;
@@ -52,7 +49,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
         public IReadableMessageSink MessageSink { get; set; }
 
-        public ReadOnlyObservableCollection<ProjectViewModel> Projects => _projects;
+        public ReadOnlyObservableCollection<Project> Projects => _projects;
 
         public ReactiveCommand<Unit, IEnumerable<Project>> Load { get; private set; }
         public ReactiveCommand<Unit, Unit> Cancel { get; private set; }
@@ -157,7 +154,6 @@ namespace ReferenceAnalyzer.UI.ViewModels
                 .Subscribe(_ => projects.Clear());
 
             projects.Connect()
-                .Select(s => new ProjectViewModel(s))
                 .Bind(out _projects)
                 .Subscribe();
 
@@ -186,7 +182,7 @@ namespace ReferenceAnalyzer.UI.ViewModels
 
             var analyzeProgress = Analyze
                 .Scan(0, (acc, _) => acc + 1)
-                .Select(c => (double)c / projects.Count)
+                .Select(c => (double)c / _projects.Count)
                 .Merge(Analyze.IsExecuting.Select(x => x ? 0.0 : 1.0));
             var loadProgress = Load.IsExecuting
                 .Select(x => x ? -1.0 : 1.0);
@@ -247,21 +243,15 @@ namespace ReferenceAnalyzer.UI.ViewModels
         }
     }
 
-    public enum ProcessingState
-    {
-        NotStarted,
-        InProgress,
-        Finished
-    }
-
     public class ProjectViewModel
     {
-        public ProjectViewModel(string name)
+        public ProjectViewModel(string name, EAnalysisStage stage)
         {
             Name = name;
+            Stage = stage;
         }
 
-        public ProcessingState State { get; set; }
+        public EAnalysisStage Stage { get; set; }
 
         public string Name { get; }
     }

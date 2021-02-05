@@ -5,12 +5,12 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
-using ReferenceAnalyzer.UI.ViewModels;
+using ReferenceAnalyzer.Core.Models;
 
 namespace ReferenceAnalyzer.UI.Views
 {
 
-    public class ProjectView : ReactiveUserControl<ProjectViewModel>
+    public class ProjectView : ReactiveUserControl<Project>
     {
         public ProjectView()
         {
@@ -19,17 +19,17 @@ namespace ReferenceAnalyzer.UI.Views
             {
                 this.OneWayBind(ViewModel,
                        viewModel => viewModel.Name,
-                       view => view.ProjectName.Text)
+                       view => view.DisplayName.Text)
                    .DisposeWith(disposableRegistration);
 
                 this.OneWayBind(ViewModel,
-                        viewModel => viewModel.State,
-                        view => view.ProjectName.Background,
+                        viewModel => viewModel.AnalysisStage,
+                        view => view.Progress.Background,
                         s => s switch
                         {
-                            ProcessingState.Finished => Brushes.Green,
-                            ProcessingState.NotStarted => Brushes.Gray,
-                            ProcessingState.InProgress => Brushes.LightYellow,
+                            EAnalysisStage.Finished => Brushes.Green,
+                            EAnalysisStage.NotStarted => Brushes.Gray,
+                            EAnalysisStage.InProgress => Brushes.LightYellow,
                             _ => throw new ArgumentOutOfRangeException(nameof(s), s, null)
                         })
                     .DisposeWith(disposableRegistration);
@@ -37,6 +37,7 @@ namespace ReferenceAnalyzer.UI.Views
 
         }
 
-        public TextBlock ProjectName => this.FindControl<TextBlock>(nameof(ProjectName));
+        public TextBlock DisplayName => this.FindControl<TextBlock>(nameof(DisplayName));
+        public TextBlock Progress => this.FindControl<TextBlock>(nameof(Progress));
     }
 }

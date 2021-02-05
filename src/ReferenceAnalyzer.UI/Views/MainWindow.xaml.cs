@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -135,7 +137,8 @@ namespace ReferenceAnalyzer.UI.Views
 
             this.BindCommand(ViewModel,
                     viewModel => viewModel.Analyze,
-                    view => view.AnalyzeAllCommand)
+                    view => view.AnalyzeAllCommand,
+                    viewModel => viewModel.Projects)
                 .DisposeWith(disposableRegistration);
 
             this.BindCommand(ViewModel,
